@@ -134,7 +134,52 @@ z-index:999;
 .zalo{bottom:20px;background:#0068ff;}
 
 .float img{width:28px;}
+.result h3{
+margin-bottom:10px;
+color:#00ffd5;
+}
+
+.result-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+margin-bottom:20px;
+}
+
+.result-box{
+background:rgba(255,255,255,0.06);
+padding:12px;
+border-radius:10px;
+font-size:14px;
+}
+
+.result-box b{
+display:block;
+font-size:18px;
+color:#00ffd5;
+margin-top:5px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+table th, table td{
+padding:6px;
+text-align:center;
+border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+canvas{
+margin-top:20px;
+background:rgba(255,255,255,0.05);
+padding:10px;
+border-radius:12px;
+}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -232,7 +277,9 @@ document.getElementById("loss").value=10;
 document.getElementById("angle").value=10;
 }
 }
-
+function formatVN(num){
+return new Intl.NumberFormat('vi-VN').format(num);
+}
 async function calculate(){
 
 if(!lat){
@@ -240,7 +287,7 @@ alert("Chọn vị trí trước");
 return;
 }
 
-const capacity=document.getElementById("capacity").value;
+const capacity=parseFloat(document.getElementById("capacity").value);
 const angle=document.getElementById("angle").value;
 const aspect=document.getElementById("aspect").value;
 const loss=document.getElementById("loss").value;
@@ -258,10 +305,98 @@ const PR=energy/(irradiation*capacity);
 const P90=energy*0.95;
 
 let monthTable="";
+let labels=[];
+let values=[];
+
 monthly.forEach(m=>{
-monthTable+=`<tr><td>${m.month}</td><td>${m.E_m.toFixed(0)} kWh</td></tr>`;
+labels.push("T"+m.month);
+values.push(m.E_m);
+monthTable+=`
+<tr>
+<td>T${m.month}</td>
+<td>${formatVN(m.E_m.toFixed(0))} kWh</td>
+</tr>`;
 });
 
+document.getElementById("result").style.display="block";
+document.getElementById("result").innerHTML=`
+<h3>KẾT QUẢ PHÂN TÍCH EPC</h3>
+
+<div class="result-grid">
+<div class="result-box">
+Annual Yield
+<b>${formatVN(energy.toFixed(0))} kWh</b>
+</div>
+
+<div class="result-box">
+Specific Yield
+<b>${formatVN(specificYield.toFixed(0))} kWh/kWp</b>
+</div>
+
+<div class="result-box">
+Capacity Factor
+<b>${(capacityFactor*100).toFixed(2)} %</b>
+</div>
+
+<div class="result-box">
+Performance Ratio
+<b>${(PR*100).toFixed(1)} %</b>
+</div>
+
+<div class="result-box">
+P90 Estimate
+<b>${formatVN(P90.toFixed(0))} kWh</b>
+</div>
+</div>
+
+<h4>SẢN LƯỢNG THEO THÁNG</h4>
+
+<table>
+<thead>
+<tr>
+<th>Tháng</th>
+<th>Sản lượng (kWh)</th>
+</tr>
+</thead>
+<tbody>
+${monthTable}
+</tbody>
+</table>
+
+<canvas id="yieldChart"></canvas>
+`;
+
+setTimeout(()=>{
+const ctx=document.getElementById("yieldChart");
+
+new Chart(ctx,{
+type:'bar',
+data:{
+labels:labels,
+datasets:[{
+label:'Sản lượng (kWh)',
+data:values
+}]
+},
+options:{
+responsive:true,
+plugins:{
+legend:{display:false}
+},
+scales:{
+y:{
+ticks:{
+callback:function(value){
+return formatVN(value);
+}
+}
+}
+}
+}
+});
+},200);
+
+}
 document.getElementById("result").style.display="block";
 document.getElementById("result").innerHTML=`
 <h3>Kết quả phân tích EPC</h3>
