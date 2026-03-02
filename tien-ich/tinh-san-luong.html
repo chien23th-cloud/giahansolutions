@@ -9,11 +9,12 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.5.2/ol.css">
 <script src="https://cdn.jsdelivr.net/npm/ol@v7.5.2/dist/ol.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{background:#0f2027;color:#fff;padding:30px;}
-h1{text-align:center;color:#00ffd5;margin-bottom:5px;}
+h1{text-align:center;color:#00ffd5;}
 .subtitle{text-align:center;color:#aaa;margin-bottom:25px;}
 
 .wrapper{
@@ -31,9 +32,18 @@ border-radius:16px;
 padding:20px;
 }
 
-#map{width:100%;height:450px;border-radius:15px;}
+#map{
+width:100%;
+height:450px;
+min-height:450px;
+border-radius:15px;
+}
 
-select,input{
+.layer-switch{
+margin-bottom:10px;
+}
+
+input,select{
 width:100%;
 padding:8px;
 margin-bottom:10px;
@@ -50,12 +60,6 @@ font-weight:600;
 cursor:pointer;
 width:100%;
 margin-top:10px;
-transition:0.3s;
-}
-
-button:hover{
-transform:translateY(-2px);
-box-shadow:0 8px 20px rgba(0,255,213,0.4);
 }
 
 .result{
@@ -65,7 +69,7 @@ background:rgba(0,255,213,0.1);
 border-radius:12px;
 opacity:0;
 transform:translateY(20px);
-transition:all 0.6s ease;
+transition:0.6s;
 }
 
 .result.show{
@@ -81,7 +85,7 @@ padding:25px;
 display:none;
 opacity:0;
 transform:translateY(30px);
-transition:all 0.7s ease;
+transition:0.7s;
 }
 
 .chart-panel.show{
@@ -93,12 +97,11 @@ transform:translateY(0);
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:30px;
-margin-top:20px;
 }
 
 canvas{
-width:100% !important;
-height:380px !important;
+width:100%!important;
+height:350px!important;
 }
 
 @media(max-width:1000px){
@@ -112,19 +115,29 @@ height:380px !important;
 <body>
 
 <h1>GIA HAN SOLUTIONS</h1>
-<p class="subtitle">EPC Solar Yield Calculator – Residential & C&I</p>
+<p class="subtitle">EPC Solar Yield Calculator</p>
 
 <div class="wrapper">
 
 <div class="panel">
-<button onclick="getLocation()">📍 Lấy vị trí</button>
+<div class="layer-switch">
+<button onclick="switchLayer('osm')">OSM</button>
+<button onclick="switchLayer('sat')">Satellite</button>
+</div>
 <div id="map"></div>
 <p id="coords">Chưa chọn vị trí</p>
 </div>
 
 <div class="panel">
 
-<label>Công suất DC (kWp)</label>
+<h3>Thông tin khách hàng</h3>
+<input type="text" id="customerName" placeholder="Tên khách hàng">
+<input type="text" id="customerPhone" placeholder="Số điện thoại">
+<input type="text" id="projectName" placeholder="Tên dự án">
+
+<hr>
+
+<label>Công suất (kWp)</label>
 <input type="number" id="capacity" value="5">
 
 <label>Góc nghiêng (°)</label>
@@ -133,81 +146,90 @@ height:380px !important;
 <label>Hướng (°)</label>
 <input type="number" id="aspect" value="0">
 
-<label>Tổng tổn hao (%)</label>
+<label>Tổn hao (%)</label>
 <input type="number" id="loss" value="14">
 
 <button onclick="calculate()">PHÂN TÍCH EPC</button>
+<button onclick="exportPDF()">XUẤT PDF</button>
 
 <div class="result" id="result"></div>
 
 </div>
 
 <div class="chart-panel" id="chartPanel">
-<h3>Phân tích sản lượng & bức xạ</h3>
-
+<h3>Biểu đồ phân tích</h3>
 <div class="chart-grid">
-<div>
-<h4>Sản lượng tháng (kWh)</h4>
 <canvas id="energyChart"></canvas>
-</div>
-
-<div>
-<h4>Irradiation vs Energy</h4>
 <canvas id="compareChart"></canvas>
 </div>
 </div>
 
 </div>
 
-</div>
-
 <script>
 
-let lat=null;
-let lon=null;
-let energyChart=null;
-let compareChart=null;
+let lat=null,lon=null;
+let markerLayer;
+let energyChart=null,compareChart=null;
+
+/* ==== MAP LAYERS ==== */
+const osmLayer=new ol.layer.Tile({
+source:new ol.source.OSM()
+});
+
+const satelliteLayer=new ol.layer.Tile({
+source:new ol.source.XYZ({
+url:'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+})
+});
 
 const map=new ol.Map({
 target:'map',
-layers:[new ol.layer.Tile({source:new ol.source.OSM()})],
+layers:[osmLayer],
 view:new ol.View({
 center:ol.proj.fromLonLat([106,16]),
 zoom:6
 })
 });
 
+function switchLayer(type){
+map.getLayers().setAt(0,type==='sat'?satelliteLayer:osmLayer);
+}
+
+/* ==== MARKER ==== */
 map.on('click',function(evt){
 const coord=ol.proj.toLonLat(evt.coordinate);
 lon=coord[0];
 lat=coord[1];
+
 document.getElementById("coords").innerText=
 `Vị trí: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+
+if(markerLayer) map.removeLayer(markerLayer);
+
+const marker=new ol.Feature({
+geometry:new ol.geom.Point(evt.coordinate)
 });
 
-function getLocation(){
-navigator.geolocation.getCurrentPosition(pos=>{
-lat=pos.coords.latitude;
-lon=pos.coords.longitude;
-map.getView().animate({
-center:ol.proj.fromLonLat([lon,lat]),
-zoom:15,
-duration:1200
+markerLayer=new ol.layer.Vector({
+source:new ol.source.Vector({features:[marker]})
 });
-});
-}
 
+map.addLayer(markerLayer);
+});
+
+setTimeout(()=>map.updateSize(),500);
+window.addEventListener("resize",()=>setTimeout(()=>map.updateSize(),300));
+
+/* ==== CALCULATE ==== */
 async function calculate(){
 
-if(!lat){
-alert("Chọn vị trí trước");
-return;
-}
+if(!lat){alert("Chọn vị trí trên bản đồ");return;}
 
-const capacity=document.getElementById("capacity").value;
-const angle=document.getElementById("angle").value;
-const aspect=document.getElementById("aspect").value;
-const loss=document.getElementById("loss").value;
+const capacity=capacity.value;
+const angle=angle.value;
+const aspect=aspect.value;
+const loss=loss.value;
 
 const res=await fetch(`/api/pvgis?lat=${lat}&lon=${lon}&peakpower=${capacity}&angle=${angle}&aspect=${aspect}&loss=${loss}`);
 const data=await res.json();
@@ -216,87 +238,93 @@ const energy=data.outputs.totals.fixed.E_y;
 const irradiation=data.outputs.totals.fixed["H(i)_y"];
 const monthly=data.outputs.monthly.fixed;
 
-const specificYield=energy/capacity;
-const capacityFactor=energy/(capacity*8760);
-const PR=energy/(irradiation*capacity);
-const P90=energy*0.95;
-
-let labels=[];
-let energyValues=[];
-let irradiationValues=[];
-
+let labels=[],energyValues=[],irradiationValues=[];
 monthly.forEach(m=>{
 labels.push("T"+m.month);
 energyValues.push(m.E_m);
 irradiationValues.push(m["H(i)_m"]);
 });
 
-const resultBox=document.getElementById("result");
-resultBox.innerHTML=`
-<h3>Kết quả phân tích EPC</h3>
-<p><b>Sản lượng năm:</b> ${energy.toFixed(0)} kWh</p>
-<p><b>Specific Yield:</b> ${specificYield.toFixed(0)} kWh/kWp</p>
-<p><b>Capacity Factor:</b> ${(capacityFactor*100).toFixed(2)} %</p>
-<p><b>PR:</b> ${(PR*100).toFixed(1)} %</p>
-<p><b>P90:</b> ${P90.toFixed(0)} kWh</p>
+result.innerHTML=`
+<h3>Kết quả</h3>
+<p>Sản lượng năm: ${energy.toFixed(0)} kWh</p>
+<p>Irradiation năm: ${irradiation.toFixed(0)} kWh/m²</p>
 `;
-resultBox.classList.add("show");
+result.classList.add("show");
 
-/* HIỆN BIỂU ĐỒ */
-const chartPanel=document.getElementById("chartPanel");
 chartPanel.style.display="block";
-setTimeout(()=>{chartPanel.classList.add("show");},100);
+setTimeout(()=>{
+chartPanel.classList.add("show");
+map.updateSize();
+},200);
 
-/* Destroy old */
 if(energyChart) energyChart.destroy();
 if(compareChart) compareChart.destroy();
 
-/* Chart 1 */
-energyChart=new Chart(document.getElementById("energyChart"),{
+energyChart=new Chart(energyChart=document.getElementById("energyChart"),{
 type:'bar',
-data:{
-labels:labels,
-datasets:[{
-label:'Energy (kWh)',
-data:energyValues
-}]
-},
-options:{
-responsive:true,
-animation:{duration:1500}
-}
+data:{labels:labels,datasets:[{label:'Energy (kWh)',data:energyValues}]},
+options:{responsive:true,animation:{duration:1500}}
 });
 
-/* Chart 2 */
-compareChart=new Chart(document.getElementById("compareChart"),{
+compareChart=new Chart(compareChart=document.getElementById("compareChart"),{
 type:'line',
 data:{
 labels:labels,
 datasets:[
-{
-label:'Irradiation (kWh/m²)',
-data:irradiationValues,
-yAxisID:'y1'
-},
-{
-label:'Energy (kWh)',
-data:energyValues,
-yAxisID:'y2'
-}
+{label:'Irradiation',data:irradiationValues,yAxisID:'y1'},
+{label:'Energy',data:energyValues,yAxisID:'y2'}
 ]
 },
 options:{
 responsive:true,
-interaction:{mode:'index',intersect:false},
 animation:{duration:1800},
 scales:{
-y1:{type:'linear',position:'left'},
-y2:{type:'linear',position:'right'}
+y1:{position:'left'},
+y2:{position:'right'}
 }
 }
 });
 
+window.calculatedData={energy,irradiation,monthly};
+
 }
+
+/* ==== EXPORT PDF ==== */
+async function exportPDF(){
+
+if(!window.calculatedData){alert("Chưa có dữ liệu");return;}
+
+const {jsPDF}=window.jspdf;
+const doc=new jsPDF();
+
+const name=customerName.value;
+const phone=customerPhone.value;
+const project=projectName.value;
+
+doc.setFontSize(16);
+doc.text("GIA HAN SOLUTIONS - EPC REPORT",20,20);
+
+doc.setFontSize(12);
+doc.text(`Khách hàng: ${name}`,20,35);
+doc.text(`SĐT: ${phone}`,20,42);
+doc.text(`Dự án: ${project}`,20,49);
+
+doc.text(`Sản lượng năm: ${window.calculatedData.energy.toFixed(0)} kWh`,20,65);
+doc.text(`Irradiation năm: ${window.calculatedData.irradiation.toFixed(0)} kWh/m²`,20,72);
+
+let y=90;
+doc.text("Sản lượng tháng:",20,y);
+y+=8;
+
+window.calculatedData.monthly.forEach(m=>{
+doc.text(`Tháng ${m.month}: ${m.E_m.toFixed(0)} kWh`,20,y);
+y+=7;
+});
+
+doc.save("EPC_Report_GiaHanSolutions.pdf");
+}
+
 </script>
 
 </body>
