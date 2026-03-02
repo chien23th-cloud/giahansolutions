@@ -33,10 +33,8 @@ display:flex;
 height:calc(100vh - 70px);
 gap:20px;
 padding:20px;
-transition:all .4s ease;
 }
 
-/* SIDEBAR */
 .sidebar{
 width:380px;
 background:rgba(0,0,0,0.45);
@@ -44,8 +42,7 @@ border:1px solid var(--border);
 border-radius:20px;
 padding:20px;
 overflow-y:auto;
-backdrop-filter:blur(20px);
-transition:all .4s ease;
+transition:.4s;
 }
 
 .sidebar.collapsed{
@@ -61,7 +58,6 @@ background:rgba(255,255,255,0.03);
 padding:15px;
 border-radius:15px;
 border:1px solid var(--border);
-transition:all .3s ease;
 }
 
 .card-header{
@@ -91,7 +87,6 @@ text-align:center;
 font-size:.85rem;
 }
 
-/* MAP ZONE */
 .map-zone{
 flex:1;
 position:relative;
@@ -104,10 +99,9 @@ border:1px solid var(--border);
 width:100%;
 height:100%;
 border:none;
-transition:opacity .4s ease;
+transition:opacity .4s;
 }
 
-/* CHART OVERLAY */
 .chart-overlay{
 position:absolute;
 bottom:20px;
@@ -115,11 +109,10 @@ left:20px;
 right:20px;
 height:220px;
 background:rgba(0,0,0,0.65);
-backdrop-filter:blur(15px);
 border-radius:15px;
 padding:15px;
 border:1px solid var(--border);
-transition:opacity .4s ease, transform .4s ease;
+transition:opacity .4s, transform .4s;
 }
 
 .chart-overlay.fade-out{
@@ -132,7 +125,6 @@ opacity:1;
 transform:translateY(0);
 }
 
-/* TOGGLE BUTTON */
 .toggle-btn{
 position:absolute;
 top:20px;
@@ -146,7 +138,6 @@ border-radius:30px;
 cursor:pointer;
 }
 
-/* LAYER CONTROL */
 .layer-control{
 position:absolute;
 top:20px;
@@ -170,13 +161,33 @@ transition:.3s;
 background:var(--primary);
 color:#000;
 }
+
+.risk-low{color:#00ff88;font-weight:600;}
+.risk-medium{color:#ffd000;font-weight:600;}
+.risk-high{color:#ff4d4d;font-weight:600;}
+
+footer{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+background:rgba(0,0,0,0.6);
+border-top:1px solid var(--border);
+padding:8px 20px;
+font-size:12px;
+display:flex;
+justify-content:space-between;
+color:#aaa;
+}
 </style>
 </head>
 
 <body>
 
 <div class="top-bar">
-<h2>Gia Han Weather Pro</h2>
+<h2>Gia Han Weather Pro 
+<span id="live-time" style="font-size:14px;color:#00ffd5;margin-left:10px;"></span>
+</h2>
 <select id="city-select">
 <option value="19.80,105.77">Thanh Hóa</option>
 <option value="21.02,105.83">Hà Nội</option>
@@ -192,6 +203,7 @@ color:#000;
 <div class="card">
 <div class="card-header">Thời tiết hiện tại</div>
 <div class="temp-main"><span id="curr-temp">--</span>°C</div>
+<div id="weather-status" style="text-align:center;margin-bottom:10px;color:#00ffd5;font-weight:600;"></div>
 <div class="detail-grid">
 <div class="detail-item">Độ ẩm<br><b id="hum">--%</b></div>
 <div class="detail-item">Áp suất<br><b id="pres">--</b></div>
@@ -201,7 +213,7 @@ color:#000;
 </div>
 
 <div class="card">
-<div class="card-header">Dự báo 7 ngày</div>
+<div class="card-header">Dự báo 7 ngày & Rủi ro NLMT</div>
 <div id="forecast-list"></div>
 </div>
 
@@ -228,12 +240,34 @@ color:#000;
 </div>
 </div>
 
+<div id="detailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;z-index:9999;">
+<div style="background:#1a2a30;padding:25px;border-radius:15px;width:420px;border:1px solid #00ffd5;">
+<h3 id="modal-date" style="color:#00ffd5;margin-bottom:15px;"></h3>
+<div id="modal-body" style="line-height:1.8;"></div>
+<button onclick="closeModal()" style="margin-top:15px;padding:8px 15px;background:#00ffd5;border:none;border-radius:20px;cursor:pointer;">
+Đóng
+</button>
+</div>
+</div>
+
+<footer>
+<div>© 2026 Gia Han Solutions | Weather Intelligence</div>
+<div>Dữ liệu: Open-Meteo | Radar: Windy</div>
+</footer>
+
 <script>
 let mainChart=null;
 let weatherData=null;
 let currentLayer="clouds";
 let currentLat=19.80;
 let currentLon=105.77;
+
+function updateLiveTime(){
+const now=new Date();
+document.getElementById("live-time").innerText=now.toLocaleTimeString("vi-VN");
+}
+setInterval(updateLiveTime,1000);
+updateLiveTime();
 
 function toggleSidebar(){
 document.getElementById("sidebar").classList.toggle("collapsed");
@@ -253,12 +287,26 @@ map.style.opacity=1;
 },300);
 }
 
+function getWeatherText(code){
+if(code===0) return "☀ Trời nắng";
+if([1,2,3].includes(code)) return "⛅ Có mây";
+if([61,63,65,80,81,82].includes(code)) return "🌧 Mưa";
+if([95,96,99].includes(code)) return "⚡ Giông";
+return "⛅ Khác";
+}
+
+function evaluateSolarRisk(radiation,code){
+if(radiation>20 && code===0) return {text:"🟢 Rủi ro thấp",class:"risk-low"};
+if(radiation>10) return {text:"🟡 Rủi ro trung bình",class:"risk-medium"};
+return {text:"🔴 Rủi ro cao",class:"risk-high"};
+}
+
 async function fetchData(lat,lon){
 currentLat=lat;
 currentLon=lon;
 updateMap();
 
-const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,shortwave_radiation,surface_pressure&hourly=temperature_2m,shortwave_radiation&daily=temperature_2m_max,temperature_2m_min,uv_index_max&timezone=Asia%2FBangkok`;
+const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,shortwave_radiation,surface_pressure,weathercode&hourly=temperature_2m,shortwave_radiation&daily=temperature_2m_max,temperature_2m_min,uv_index_max,weathercode,shortwave_radiation_sum&timezone=Asia%2FBangkok`;
 
 const res=await fetch(url);
 weatherData=await res.json();
@@ -272,55 +320,52 @@ document.getElementById("hum").innerText=weatherData.current.relative_humidity_2
 document.getElementById("pres").innerText=weatherData.current.surface_pressure;
 document.getElementById("solar").innerText=Math.round(weatherData.current.shortwave_radiation);
 document.getElementById("uv").innerText=weatherData.daily.uv_index_max[0];
-
-const chartBox=document.querySelector(".chart-overlay");
-chartBox.classList.add("fade-out");
-
-setTimeout(()=>{
-
-if(mainChart) mainChart.destroy();
-
-const ctx=document.getElementById("mainChart");
-mainChart=new Chart(ctx,{
-type:"line",
-data:{
-labels:weatherData.hourly.time.slice(6,20).map(t=>t.split("T")[1]),
-datasets:[
-{
-label:"Bức xạ",
-data:weatherData.hourly.shortwave_radiation.slice(6,20),
-borderColor:"#ffcc00",
-fill:true,
-backgroundColor:"rgba(255,204,0,0.1)",
-tension:.4
-},
-{
-label:"Nhiệt độ",
-data:weatherData.hourly.temperature_2m.slice(6,20),
-borderColor:"#00ffd5",
-tension:.4
-}
-]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false,
-animation:{duration:800,easing:"easeOutQuart"}
-}
-});
-
-chartBox.classList.remove("fade-out");
-chartBox.classList.add("fade-in");
-
-},400);
+document.getElementById("weather-status").innerText=getWeatherText(weatherData.current.weathercode);
 
 const list=document.getElementById("forecast-list");
 list.innerHTML="";
+
 weatherData.daily.time.forEach((t,i)=>{
-list.innerHTML+=`<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-${t} — ${Math.round(weatherData.daily.temperature_2m_max[i])}° / ${Math.round(weatherData.daily.temperature_2m_min[i])}°
+const status=getWeatherText(weatherData.daily.weathercode[i]);
+const risk=evaluateSolarRisk(
+weatherData.daily.shortwave_radiation_sum[i],
+weatherData.daily.weathercode[i]
+);
+
+list.innerHTML+=`
+<div onclick="openModal(${i})"
+style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;">
+${t} — ${Math.round(weatherData.daily.temperature_2m_max[i])}° /
+${Math.round(weatherData.daily.temperature_2m_min[i])}° 
+<br><span style="font-size:12px;color:#00ffd5;">${status}</span>
+<br><span class="${risk.class}" style="font-size:12px;">${risk.text}</span>
 </div>`;
 });
+
+}
+
+function openModal(index){
+const d=weatherData.daily;
+const risk=evaluateSolarRisk(
+d.shortwave_radiation_sum[index],
+d.weathercode[index]
+);
+
+document.getElementById("modal-date").innerText="Chi tiết ngày "+d.time[index];
+document.getElementById("modal-body").innerHTML=`
+<b>Trạng thái:</b> ${getWeatherText(d.weathercode[index])}<br>
+<b>Nhiệt độ cao nhất:</b> ${d.temperature_2m_max[index]}°C<br>
+<b>Nhiệt độ thấp nhất:</b> ${d.temperature_2m_min[index]}°C<br>
+<b>UV tối đa:</b> ${d.uv_index_max[index]}<br>
+<b>Bức xạ ngày:</b> ${d.shortwave_radiation_sum[index]} MJ/m²<br>
+<b class="${risk.class}">${risk.text}</b>
+`;
+
+document.getElementById("detailModal").style.display="flex";
+}
+
+function closeModal(){
+document.getElementById("detailModal").style.display="none";
 }
 
 document.getElementById("city-select").onchange=function(){
