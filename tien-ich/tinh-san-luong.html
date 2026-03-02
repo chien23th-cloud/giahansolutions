@@ -9,31 +9,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.5.2/ol.css">
 <script src="https://cdn.jsdelivr.net/npm/ol@v7.5.2/dist/ol.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{background:#0f2027;color:#fff;padding:30px;}
-h1{text-align:center;color:#00ffd5;}
-.subtitle{text-align:center;color:#aaa;margin-bottom:25px;}
 
-.home-btn{
-position:absolute;
-top:20px;
-left:20px;
-display:flex;
-align-items:center;
-gap:6px;
-padding:8px 14px;
-border-radius:12px;
-background:rgba(255,255,255,0.08);
-backdrop-filter:blur(8px);
-border:1px solid rgba(255,255,255,0.15);
-color:#00ffd5;
-text-decoration:none;
-font-weight:600;
-z-index:1000;
-}
+h1{text-align:center;color:#00ffd5;margin-bottom:5px;}
+.subtitle{text-align:center;color:#aaa;margin-bottom:25px;}
 
 .wrapper{
 display:grid;
@@ -47,28 +29,19 @@ margin:auto;
 background:rgba(255,255,255,0.05);
 border-radius:16px;
 padding:20px;
-}
-
-.map-container{
-width:100%;
-height:450px;
 position:relative;
 }
 
-#map{
-position:absolute;
-top:0;
-left:0;
-right:0;
-bottom:0;
-border-radius:15px;
+#map{width:100%;height:450px;border-radius:15px;}
+
+.chart-box{
+margin-top:25px;
+background:rgba(255,255,255,0.05);
+padding:20px;
+border-radius:16px;
 }
 
-.layer-switch{
-margin-bottom:10px;
-}
-
-input{
+select,input{
 width:100%;
 padding:8px;
 margin-bottom:10px;
@@ -87,6 +60,18 @@ width:100%;
 margin-top:10px;
 }
 
+.toggle-map{
+position:absolute;
+top:15px;
+right:15px;
+width:auto;
+padding:6px 12px;
+font-size:13px;
+background:#222;
+color:#00ffd5;
+border:1px solid #00ffd5;
+}
+
 .result{
 margin-top:15px;
 padding:20px;
@@ -94,105 +79,81 @@ background:rgba(0,255,213,0.1);
 border-radius:12px;
 }
 
-.chart-panel{
-margin-top:30px;
+footer{
+margin-top:60px;
+padding:30px;
 background:rgba(255,255,255,0.05);
-border-radius:16px;
-padding:25px;
-display:none;
+border-top:1px solid rgba(255,255,255,0.1);
+text-align:center;
+font-size:14px;
+color:#aaa;
 }
 
-.chart-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:30px;
-}
-
-canvas{
-width:100%!important;
-height:350px!important;
-}
-
-@media(max-width:1000px){
-.wrapper{grid-template-columns:1fr;}
-.chart-grid{grid-template-columns:1fr;}
-.map-container{height:350px;}
+footer .brand{
+color:#00ffd5;
+font-weight:600;
+font-size:16px;
+margin-bottom:8px;
 }
 </style>
 </head>
 
 <body>
 
-<a href="/" class="home-btn">← Trang chủ</a>
+<a href="/" class="home-btn" style="position:absolute;top:20px;left:20px;color:#00ffd5;text-decoration:none;font-weight:600;">← Trang chủ</a>
 
 <h1>GIA HAN SOLUTIONS</h1>
-<p class="subtitle">EPC Solar Yield Calculator</p>
+<p class="subtitle">EPC Solar Yield Calculator – Residential & C&I</p>
 
 <div class="wrapper">
 
 <div class="panel">
-<div class="layer-switch">
-<button onclick="switchLayer('osm')">OSM</button>
-<button onclick="switchLayer('sat')">Satellite</button>
-</div>
-
-<div class="map-container">
+<button onclick="getLocation()">📍 Lấy vị trí</button>
+<button class="toggle-map" onclick="toggleMap()">Satellite</button>
 <div id="map"></div>
+<p id="coords">Chưa chọn vị trí</p>
+
+<div class="chart-box">
+<canvas id="monthlyChart"></canvas>
 </div>
 
-<p id="coords">Chưa chọn vị trí</p>
+<div class="chart-box">
+<canvas id="irrChart"></canvas>
+</div>
+
 </div>
 
 <div class="panel">
 
-<h3>Thông tin khách hàng</h3>
-<input type="text" id="customerName" placeholder="Tên khách hàng">
-<input type="text" id="customerPhone" placeholder="Số điện thoại">
-<input type="text" id="projectName" placeholder="Tên dự án">
-
-<hr>
-
-<label>Công suất (kWp)</label>
+<label>Công suất DC (kWp)</label>
 <input type="number" id="capacity" value="5">
 
 <label>Góc nghiêng (°)</label>
 <input type="number" id="angle" value="15">
 
-<label>Hướng (°)</label>
+<label>Hướng (°) – 0 = Nam</label>
 <input type="number" id="aspect" value="0">
 
 <label>Tổn hao (%)</label>
 <input type="number" id="loss" value="14">
 
 <button onclick="calculate()">PHÂN TÍCH EPC</button>
-<button onclick="exportPDF()">XUẤT PDF</button>
 
-<div class="result" id="result"></div>
+<div class="result" id="result" style="display:none;"></div>
 
-</div>
-</div>
-
-<div class="chart-panel" id="chartPanel">
-<h3>Biểu đồ phân tích</h3>
-<div class="chart-grid">
-<canvas id="energyChart"></canvas>
-<canvas id="compareChart"></canvas>
 </div>
 </div>
 
 <script>
+let lat=null;
+let lon=null;
+let satellite=false;
+let monthlyChart, irrChart;
 
-let lat=null,lon=null;
-let markerLayer;
-let energyChart=null,compareChart=null;
-
-const osmLayer=new ol.layer.Tile({
-source:new ol.source.OSM()
-});
-
-const satelliteLayer=new ol.layer.Tile({
+const osmLayer=new ol.layer.Tile({source:new ol.source.OSM()});
+const satLayer=new ol.layer.Tile({
 source:new ol.source.XYZ({
-url:'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+url:'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
 })
 });
 
@@ -205,48 +166,37 @@ zoom:6
 })
 });
 
-/* FIX MAP SIZE TRIỆT ĐỂ */
-const resizeObserver=new ResizeObserver(()=>{
-map.updateSize();
-});
-resizeObserver.observe(document.querySelector(".map-container"));
-
-window.addEventListener("load",()=>map.updateSize());
-window.addEventListener("resize",()=>map.updateSize());
-
-function switchLayer(type){
-map.getLayers().setAt(0,type==='sat'?satelliteLayer:osmLayer);
+function toggleMap(){
+satellite=!satellite;
+map.getLayers().setAt(0,satellite?satLayer:osmLayer);
 }
 
 map.on('click',function(evt){
 const coord=ol.proj.toLonLat(evt.coordinate);
 lon=coord[0];
 lat=coord[1];
-
 document.getElementById("coords").innerText=
 `Vị trí: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-
-if(markerLayer) map.removeLayer(markerLayer);
-
-const marker=new ol.Feature({
-geometry:new ol.geom.Point(evt.coordinate)
 });
 
-markerLayer=new ol.layer.Vector({
-source:new ol.source.Vector({features:[marker]})
+function getLocation(){
+navigator.geolocation.getCurrentPosition(pos=>{
+lat=pos.coords.latitude;
+lon=pos.coords.longitude;
+map.getView().animate({
+center:ol.proj.fromLonLat([lon,lat]),
+zoom:15
 });
-
-map.addLayer(markerLayer);
 });
+}
 
 async function calculate(){
+if(!lat){alert("Chọn vị trí trước");return;}
 
-if(!lat){alert("Chọn vị trí trên bản đồ");return;}
-
-const capacity=capacity.value;
-const angle=angle.value;
-const aspect=aspect.value;
-const loss=loss.value;
+const capacity=document.getElementById("capacity").value;
+const angle=document.getElementById("angle").value;
+const aspect=document.getElementById("aspect").value;
+const loss=document.getElementById("loss").value;
 
 const res=await fetch(`/api/pvgis?lat=${lat}&lon=${lon}&peakpower=${capacity}&angle=${angle}&aspect=${aspect}&loss=${loss}`);
 const data=await res.json();
@@ -255,18 +205,57 @@ const energy=data.outputs.totals.fixed.E_y;
 const irradiation=data.outputs.totals.fixed["H(i)_y"];
 const monthly=data.outputs.monthly.fixed;
 
-result.innerHTML=`Sản lượng năm: ${energy.toFixed(0)} kWh`;
-chartPanel.style.display="block";
+let months=[];
+let energies=[];
+let irrs=[];
 
-map.updateSize();
+monthly.forEach(m=>{
+months.push("T"+m.month);
+energies.push(m.E_m);
+irrs.push(m["H(i)_m"]);
+});
 
+if(monthlyChart) monthlyChart.destroy();
+if(irrChart) irrChart.destroy();
+
+monthlyChart=new Chart(document.getElementById("monthlyChart"),{
+type:'bar',
+data:{
+labels:months,
+datasets:[{
+label:'Sản lượng (kWh)',
+data:energies
+}]
 }
+});
 
-function exportPDF(){
-alert("PDF vẫn hoạt động như bản trước.");
+irrChart=new Chart(document.getElementById("irrChart"),{
+type:'line',
+data:{
+labels:months,
+datasets:[{
+label:'Bức xạ (kWh/m²)',
+data:irrs
+}]
 }
+});
 
+document.getElementById("result").style.display="block";
+document.getElementById("result").innerHTML=`
+<h3>Kết quả EPC</h3>
+<p><b>Annual Yield:</b> ${energy.toFixed(0)} kWh</p>
+<p><b>PR xấp xỉ:</b> ${(energy/(irradiation*capacity)*100).toFixed(1)}%</p>
+`;
+}
 </script>
+
+<footer>
+  <div class="brand">GIA HAN SOLUTIONS</div>
+  <div>Đơn vị EPC điện mặt trời dân dụng & C&I</div>
+  <div>Thiết kế – Thi công – Giám sát – Tối ưu vận hành</div>
+  <div>Hotline: 0981 825 636 | admin@giahansolutions.io.vn</div>
+  <div>© 2026 Gia Han Solutions</div>
+</footer>
 
 </body>
 </html>
