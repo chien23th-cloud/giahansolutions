@@ -6,7 +6,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
 body{
@@ -17,19 +16,32 @@ margin:0;
 padding:30px;
 }
 
-h2{color:#00ffd5}
-
 .container{
 max-width:1100px;
 margin:auto;
 }
 
+h2{color:#00ffd5;margin-bottom:5px}
+
+.section{
+background:rgba(255,255,255,0.05);
+padding:20px;
+border-radius:12px;
+margin-bottom:20px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:15px;
+}
+
 input,button{
 padding:8px;
-margin:5px 0;
-width:100%;
 border-radius:6px;
 border:none;
+width:100%;
+margin-top:5px;
 }
 
 button{
@@ -40,42 +52,23 @@ cursor:pointer;
 
 .result{
 margin-top:20px;
-padding:20px;
-background:rgba(255,255,255,0.05);
-border-radius:10px;
 }
 
-.epc-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:15px;
-}
-
-.epc-card{
+.card{
 background:rgba(255,255,255,0.06);
 padding:15px;
 border-radius:10px;
 font-size:14px;
 }
 
-.epc-card .label{
-color:#aaa;
+.card .label{
 font-size:12px;
+color:#aaa;
 }
 
 .highlight{
 background:rgba(0,255,213,0.2);
-}
-
-.month-table{
-width:100%;
-margin-top:10px;
-border-collapse:collapse;
-}
-
-.month-table td{
-padding:6px;
-border-bottom:1px solid rgba(255,255,255,0.1);
+font-weight:600;
 }
 
 footer{
@@ -94,46 +87,33 @@ color:#aaa;
 <h2>GIA HAN SOLUTIONS</h2>
 <p>Công cụ tính toán sản lượng & tài chính điện mặt trời (EPC)</p>
 
-<label>Latitude</label>
-<input id="lat" value="21.0285">
+<div class="section">
+<h3>Thông số kỹ thuật</h3>
+<div class="grid">
+<div><label>Latitude</label><input id="lat" value="21.0285"></div>
+<div><label>Longitude</label><input id="lon" value="105.8542"></div>
+<div><label>Công suất (kWp)</label><input id="capacity" value="10"></div>
+<div><label>Góc nghiêng (°)</label><input id="angle" value="15"></div>
+<div><label>Hướng (°)</label><input id="aspect" value="0"></div>
+<div><label>Loss (%)</label><input id="loss" value="14"></div>
+</div>
+</div>
 
-<label>Longitude</label>
-<input id="lon" value="105.8542">
-
-<label>Công suất (kWp)</label>
-<input id="capacity" value="10">
-
-<label>Góc nghiêng (°)</label>
-<input id="angle" value="15">
-
-<label>Hướng (°)</label>
-<input id="aspect" value="0">
-
-<label>Loss (%)</label>
-<input id="loss" value="14">
-
-<hr>
-
-<h3>Phân tích tài chính</h3>
-
-<label>Suất đầu tư (VNĐ/kWp)</label>
-<input id="capexkwp" value="15000000">
-
-<label>Giá điện (VNĐ/kWh)</label>
-<input id="tariff" value="2500">
-
-<label>Chiết khấu (%)</label>
-<input id="discount" value="10">
-
-<label>Suy giảm (%/năm)</label>
-<input id="degradation" value="0.5">
+<div class="section">
+<h3>Thông số tài chính</h3>
+<div class="grid">
+<div><label>Suất đầu tư (VNĐ/kWp)</label><input id="capexkwp" value="15000000"></div>
+<div><label>Giá điện (VNĐ/kWh)</label><input id="tariff" value="2500"></div>
+<div><label>Chiết khấu (%)</label><input id="discount" value="10"></div>
+<div><label>Suy giảm (%/năm)</label><input id="degradation" value="0.5"></div>
+</div>
+</div>
 
 <button onclick="calculate()">Tính toán</button>
 <button onclick="exportPDF()">Xuất PDF Proposal</button>
 
 <div id="result" class="result"></div>
-
-<canvas id="monthlyChart"></canvas>
+<canvas id="monthlyChart" style="margin-top:30px;"></canvas>
 
 </div>
 
@@ -144,6 +124,7 @@ https://giahansolutions.io.vn
 </footer>
 
 <script>
+
 function formatNumber(num){
 return Number(num).toLocaleString('vi-VN');
 }
@@ -157,8 +138,8 @@ const angle = document.getElementById("angle").value;
 const aspect = document.getElementById("aspect").value;
 const loss = document.getElementById("loss").value;
 
-const response = await fetch(`https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=${lat}&lon=${lon}&peakpower=${capacity}&loss=${loss}&angle=${angle}&aspect=${aspect}&outputformat=json`);
-const data = await response.json();
+const res = await fetch(`https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=${lat}&lon=${lon}&peakpower=${capacity}&loss=${loss}&angle=${angle}&aspect=${aspect}&outputformat=json`);
+const data = await res.json();
 
 window.energy = data.outputs.totals.fixed.E_y;
 window.monthly = data.outputs.monthly.fixed;
@@ -196,18 +177,18 @@ guess-=f/df;
 return guess;
 }
 
-const NPV=npv(discount,cashflows);
-const IRR=irr(cashflows);
+window.NPV=npv(discount,cashflows);
+window.IRR=irr(cashflows);
 
 document.getElementById("result").innerHTML=`
-<div class="epc-grid">
-<div class="epc-card highlight"><div class="label">Annual Yield</div>${formatNumber(energy.toFixed(0))} kWh</div>
-<div class="epc-card"><div class="label">Specific Yield</div>${formatNumber(specificYield.toFixed(0))}</div>
-<div class="epc-card"><div class="label">PR</div>${(PR*100).toFixed(1)}%</div>
-<div class="epc-card"><div class="label">Capacity Factor</div>${(capacityFactor*100).toFixed(2)}%</div>
-<div class="epc-card"><div class="label">P90</div>${formatNumber(P90.toFixed(0))}</div>
-<div class="epc-card"><div class="label">NPV</div>${formatNumber(NPV.toFixed(0))} VNĐ</div>
-<div class="epc-card"><div class="label">IRR</div>${(IRR*100).toFixed(2)}%</div>
+<div class="grid">
+<div class="card highlight"><div class="label">Annual Yield (P50)</div>${formatNumber(energy.toFixed(0))} kWh</div>
+<div class="card"><div class="label">P90</div>${formatNumber(P90.toFixed(0))} kWh</div>
+<div class="card"><div class="label">Specific Yield</div>${formatNumber(specificYield.toFixed(0))}</div>
+<div class="card"><div class="label">PR</div>${(PR*100).toFixed(1)}%</div>
+<div class="card"><div class="label">Capacity Factor</div>${(capacityFactor*100).toFixed(2)}%</div>
+<div class="card"><div class="label">NPV (20 năm)</div>${formatNumber(NPV.toFixed(0))} VNĐ</div>
+<div class="card"><div class="label">IRR</div>${(IRR*100).toFixed(2)}%</div>
 </div>
 `;
 
@@ -215,46 +196,44 @@ if(window.chart) chart.destroy();
 window.chart=new Chart(document.getElementById("monthlyChart"),{
 type:'bar',
 data:{
-labels:monthly.map(m=>m.month),
+labels:monthly.map(m=>`T${m.month}`),
 datasets:[{data:monthly.map(m=>m.E_m)}]
-}
+},
+options:{plugins:{legend:{display:false}}}
 });
 
 }
 
-async function exportPDF(){
+function exportPDF(){
 
 const {jsPDF}=window.jspdf;
 const pdf=new jsPDF();
 
-const lat=document.getElementById("lat").value;
-const lon=document.getElementById("lon").value;
-
-const mapUrl=`https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lon}&zoom=18&size=600x300&maptype=satellite&markers=color:red%7C${lat},${lon}&key=YOUR_GOOGLE_MAP_KEY`;
-
-const img=await fetch(mapUrl).then(r=>r.blob()).then(b=>new Promise(res=>{
-const reader=new FileReader();
-reader.onload=()=>res(reader.result);
-reader.readAsDataURL(b);
-}));
-
-pdf.setFontSize(16);
+pdf.setFontSize(18);
 pdf.text("GIA HAN SOLUTIONS",20,20);
-pdf.setFontSize(12);
+
+pdf.setFontSize(13);
 pdf.text("BÁO CÁO PHÂN TÍCH ĐIỆN MẶT TRỜI",20,30);
 
-pdf.addImage(img,'PNG',20,40,170,70);
+pdf.setFontSize(11);
 
-pdf.text(`Annual Yield: ${formatNumber(energy.toFixed(0))} kWh`,20,120);
-pdf.text(`P90: ${formatNumber((energy*0.95).toFixed(0))} kWh`,20,130);
+pdf.text("I. Kết quả kỹ thuật",20,50);
+pdf.text(`Annual Yield (P50): ${formatNumber(energy.toFixed(0))} kWh`,25,60);
+pdf.text(`P90: ${formatNumber((energy*0.95).toFixed(0))} kWh`,25,70);
 
-pdf.text("Cam kết kỹ thuật:",20,150);
-pdf.text("- Thiết kế theo IEC & TCVN",25,160);
-pdf.text("- Sai số sản lượng ±5%",25,170);
-pdf.text("- Bảo hành module 25 năm hiệu suất",25,180);
+pdf.text("II. Phân tích tài chính (20 năm)",20,90);
+pdf.text(`NPV: ${formatNumber(NPV.toFixed(0))} VNĐ`,25,100);
+pdf.text(`IRR: ${(IRR*100).toFixed(2)} %`,25,110);
+
+pdf.text("III. Cam kết kỹ thuật",20,130);
+pdf.text("- Thiết kế theo IEC & TCVN hiện hành",25,140);
+pdf.text("- Sai số sản lượng tính toán ±5%",25,150);
+pdf.text("- Module bảo hành 25 năm hiệu suất",25,160);
+pdf.text("- Kiểm tra & bảo trì định kỳ 6 tháng/lần",25,170);
 
 pdf.save("Proposal-Gia-Han-Solutions.pdf");
 }
+
 </script>
 
 </body>
