@@ -3,28 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gia Han Solutions | Tính Sản Lượng Điện Mặt Trời</title>
+<title>Gia Han Solutions | Tính sản lượng điện mặt trời</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.5.2/ol.css">
 <script src="https://cdn.jsdelivr.net/npm/ol@v7.5.2/dist/ol.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{background:#0f2027;color:#fff;padding:30px;}
-
-header{
-text-align:center;
-margin-bottom:30px;
-}
-
-header img{
-height:70px;
-margin-bottom:10px;
-}
-
-h1{color:#00ffd5;}
-.subtitle{color:#aaa;margin-top:5px;}
+h1{text-align:center;color:#00ffd5;margin-bottom:5px;}
+.subtitle{text-align:center;color:#aaa;margin-bottom:25px;}
 
 .wrapper{
 display:grid;
@@ -43,30 +32,26 @@ padding:20px;
 #map{width:100%;height:500px;border-radius:15px;}
 
 button{
-padding:10px 15px;
+padding:10px;
 border:none;
 border-radius:8px;
 background:#00ffd5;
 font-weight:600;
 cursor:pointer;
-margin-bottom:10px;
 width:100%;
+margin-bottom:10px;
 }
 
-.label{font-size:14px;margin-bottom:5px;color:#aaa;}
-input[type=range]{width:100%;}
-.value{font-weight:600;color:#00ffd5;margin-bottom:15px;}
-
 .result{
-margin-top:20px;
+margin-top:15px;
 padding:20px;
-background:rgba(0,255,213,0.08);
+background:rgba(0,255,213,0.1);
 border-radius:12px;
 text-align:center;
 }
 
-.big-number{
-font-size:30px;
+.big{
+font-size:28px;
 font-weight:700;
 color:#00ffd5;
 margin:10px 0;
@@ -79,8 +64,8 @@ color:#aaa;
 font-size:14px;
 }
 
-/* Floating Buttons */
-.float-btn{
+/* Floating buttons */
+.float{
 position:fixed;
 right:20px;
 width:55px;
@@ -97,7 +82,7 @@ z-index:999;
 .messenger{bottom:90px;background:#0084ff;}
 .zalo{bottom:20px;background:#0068ff;}
 
-.float-btn img{width:28px;}
+.float img{width:28px;}
 
 @media(max-width:1000px){
 .wrapper{grid-template-columns:1fr;}
@@ -108,59 +93,47 @@ z-index:999;
 
 <body>
 
-<header>
-<img src="logo.png" alt="Gia Han Solutions">
 <h1>GIA HAN SOLUTIONS</h1>
-<p class="subtitle">TÍNH TOÁN SẢN LƯỢNG ĐIỆN MẶT TRỜI CHÍNH XÁC THEO VỊ TRÍ THỰC TẾ</p>
-</header>
+<p class="subtitle">TÍNH SẢN LƯỢNG ĐIỆN MẶT TRỜI THEO PVGIS</p>
 
 <div class="wrapper">
 
 <div class="panel">
-<button onclick="getUserLocation()">📍 Lấy vị trí của tôi</button>
+<button onclick="getLocation()">📍 Lấy vị trí của tôi</button>
 <div id="map"></div>
 <p id="coords">Chưa chọn vị trí</p>
 </div>
 
 <div class="panel">
+<label>Công suất hệ thống (kWp)</label>
+<input type="number" id="capacity" value="5" style="width:100%;padding:8px;margin:8px 0;border-radius:6px;border:none;">
+<button onclick="calculate()">TÍNH SẢN LƯỢNG</button>
 
-<div class="label">Công suất hệ thống (kWp)</div>
-<input type="range" min="1" max="50" value="5" id="capacity">
-<div class="value" id="capVal">5 kWp</div>
-
-<button onclick="calculate()">TÍNH SẢN LƯỢNG CHÍNH XÁC</button>
-
-<div class="result" id="resultBox" style="display:none;">
-<div id="ghiVal"></div>
-<div class="big-number" id="energyYear"></div>
-<div id="energyMonth"></div>
+<div class="result" id="result" style="display:none;"></div>
 </div>
 
-</div>
 </div>
 
 <footer>
-Hotline: 0981 825 636 | Email: info@giahansolutions.io.vn  
-Fanpage: fb.com/giahansolutions
+Hotline: 0981 825 636 | info@giahansolutions.io.vn
 </footer>
 
-<!-- Floating Buttons -->
 <a href="https://m.me/669698252892555" target="_blank">
-<div class="float-btn messenger">
+<div class="float messenger">
 <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png">
 </div>
 </a>
 
 <a href="https://zalo.me/0981825636" target="_blank">
-<div class="float-btn zalo">
+<div class="float zalo">
 <img src="https://cdn-icons-png.flaticon.com/512/5968/5968841.png">
 </div>
 </a>
 
 <script>
 
-let selectedLat=null;
-let selectedLon=null;
+let lat=null;
+let lon=null;
 let markerLayer;
 
 const map=new ol.Map({
@@ -172,10 +145,10 @@ zoom:6
 })
 });
 
-function addMarker(lon,lat){
+function addMarker(lonVal,latVal){
 if(markerLayer) map.removeLayer(markerLayer);
 const marker=new ol.Feature({
-geometry:new ol.geom.Point(ol.proj.fromLonLat([lon,lat]))
+geometry:new ol.geom.Point(ol.proj.fromLonLat([lonVal,latVal]))
 });
 markerLayer=new ol.layer.Vector({
 source:new ol.source.Vector({features:[marker]})
@@ -185,53 +158,55 @@ map.addLayer(markerLayer);
 
 map.on('click',function(evt){
 const coord=ol.proj.toLonLat(evt.coordinate);
-selectedLon=coord[0];
-selectedLat=coord[1];
-addMarker(selectedLon,selectedLat);
+lon=coord[0];
+lat=coord[1];
+addMarker(lon,lat);
 document.getElementById("coords").innerText=
-`Vị trí: ${selectedLat.toFixed(5)}, ${selectedLon.toFixed(5)}`;
+`Vị trí: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 });
 
-function getUserLocation(){
+function getLocation(){
 navigator.geolocation.getCurrentPosition(pos=>{
-selectedLat=pos.coords.latitude;
-selectedLon=pos.coords.longitude;
+lat=pos.coords.latitude;
+lon=pos.coords.longitude;
 
 map.getView().animate({
-center:ol.proj.fromLonLat([selectedLon,selectedLat]),
+center:ol.proj.fromLonLat([lon,lat]),
 zoom:15
 });
-addMarker(selectedLon,selectedLat);
+
+addMarker(lon,lat);
+
+document.getElementById("coords").innerText=
+`Vị trí của bạn: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 });
 }
 
-document.getElementById("capacity").oninput=()=>{
-document.getElementById("capVal").innerText=
-document.getElementById("capacity").value+" kWp";
-};
-
 async function calculate(){
 
-if(!selectedLat){
+if(!lat){
 alert("Vui lòng chọn vị trí");
 return;
 }
 
 const capacity=document.getElementById("capacity").value;
 
-const url=`https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=${selectedLat}&lon=${selectedLon}&peakpower=${capacity}&loss=14&outputformat=json`;
+const res=await fetch(`/api/pvgis?lat=${lat}&lon=${lon}&peakpower=${capacity}`);
+const data=await res.json();
 
-const response=await fetch(url);
-const data=await response.json();
+if(data.error){
+alert("Lỗi lấy dữ liệu PVGIS");
+return;
+}
 
 const energy=data.outputs.totals.fixed.E_y;
-const irradiation=data.outputs.totals.fixed.H(i)_y;
+const irr=data.outputs.totals.fixed["H(i)_y"];
 
-document.getElementById("resultBox").style.display="block";
-document.getElementById("ghiVal").innerHTML="Bức xạ: <b>"+irradiation.toFixed(0)+" kWh/m²/năm</b>";
-document.getElementById("energyYear").innerText=energy.toFixed(0)+" kWh/năm";
-document.getElementById("energyMonth").innerText="≈ "+(energy/12).toFixed(0)+" kWh/tháng";
-
+document.getElementById("result").style.display="block";
+document.getElementById("result").innerHTML=
+`<p>Bức xạ: ${irr.toFixed(0)} kWh/m²/năm</p>
+<div class="big">${energy.toFixed(0)} kWh/năm</div>
+<p>≈ ${(energy/12).toFixed(0)} kWh/tháng</p>`;
 }
 
 </script>
