@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trung Tâm Quan Trắc Khí Tượng | Gia Han Solutions</title>
+    <title>Gia Han Solutions | Weather Intelligence</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
@@ -18,38 +19,61 @@
         }
 
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
-        body { background: var(--bg); color: #fff; padding-bottom: 50px; }
-        .container { max-width: 1400px; margin: auto; padding: 20px 5%; }
+        body { background: var(--bg); color: #fff; overflow-x: hidden; padding-bottom: 50px; }
+        .container { max-width: 1600px; margin: auto; padding: 20px 2%; }
 
-        /* Widget Đồng Hồ & Header */
-        .top-bar { display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-        .clock-box { text-align: left; background: var(--glass); padding: 10px 20px; border-radius: 15px; border: 1px solid var(--border); }
-        #digital-clock { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        /* TOP BAR & CLOCK */
+        .top-bar { 
+            display: grid; 
+            grid-template-columns: 1fr 2fr 1fr; 
+            align-items: center; 
+            margin-bottom: 30px; 
+            padding: 15px 25px;
+            background: var(--glass);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
         
-        header h1 { font-size: 2rem; text-align: center; background: linear-gradient(90deg, var(--primary), #00bfff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 2px; }
-        .sub-header { text-align: center; font-size: 0.75rem; color: var(--primary); display: block; margin-top: 5px; }
+        .clock-box { text-align: left; }
+        #digital-clock { font-size: 1.8rem; font-weight: 700; color: var(--primary); line-height: 1.2; }
+        #date-lunar { font-size: 0.85rem; color: #aaa; }
 
-        /* Bố cục Dashboard 3 cột */
-        .dashboard-grid { display: grid; grid-template-columns: 350px 1fr 380px; gap: 20px; }
+        header h1 { 
+            font-size: 1.8rem; 
+            text-align: center; 
+            background: linear-gradient(90deg, var(--primary), #00bfff); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+        }
+        .header-subtext { font-size: 0.75rem; color: var(--primary); text-align: center; display: block; }
 
+        /* LOCATION CONTROL */
+        .location-control { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
+        .select-ui { padding: 10px 20px; background: #000; border: 1px solid var(--primary); color: #fff; border-radius: 30px; outline: none; cursor: pointer; }
+        .btn-gps { padding: 10px 25px; background: var(--primary); color: #000; border: none; border-radius: 30px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .btn-gps:hover { box-shadow: 0 0 15px var(--primary); }
+
+        /* DASHBOARD GRID */
+        .dashboard-grid { display: grid; grid-template-columns: 380px 1fr 380px; gap: 20px; }
         .card { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 20px; backdrop-filter: blur(10px); margin-bottom: 20px; }
-        .card-header { color: var(--primary); font-size: 0.85rem; font-weight: 700; margin-bottom: 15px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .card-header { color: var(--primary); font-size: 0.85rem; font-weight: 700; margin-bottom: 15px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
 
-        /* Thông số chính (Học tập dubaothoitiet) */
-        .weather-main { text-align: center; padding: 20px 0; }
-        .temp-large { font-size: 4rem; font-weight: 700; color: #fff; }
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .detail-item { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; text-align: center; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.05); }
-        .detail-item b { color: var(--primary); display: block; font-size: 1.1rem; }
+        /* WEATHER DETAILS (Style dubaothoitiet.edu.vn) */
+        .temp-main { font-size: 4rem; font-weight: 700; text-align: center; margin: 10px 0; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .detail-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .detail-item span { font-size: 0.75rem; color: #aaa; display: block; }
+        .detail-item b { font-size: 1.1rem; color: #fff; }
 
-        /* Dự báo & Bản đồ */
-        .forecast-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; border-radius: 10px; }
+        .forecast-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; border-radius: 10px; transition: 0.3s; }
         .forecast-item:hover { background: rgba(0, 255, 213, 0.1); }
         .map-frame { width: 100%; height: 350px; border-radius: 15px; border: 1px solid var(--border); }
 
-        /* Modal */
-        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); }
-        .modal-content { background: #1a2a30; margin: 10% auto; padding: 30px; border: 1px solid var(--primary); width: 420px; border-radius: 25px; position: relative; text-align: center; }
+        /* MODAL */
+        .modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); }
+        .modal-content { background: #1a2a30; margin: 10% auto; padding: 30px; border: 1px solid var(--primary); width: 420px; border-radius: 25px; position: relative; }
         .close-btn { position: absolute; right: 20px; top: 10px; font-size: 24px; cursor: pointer; color: var(--primary); }
 
         @media (max-width: 1200px) { .dashboard-grid { grid-template-columns: 1fr; } .top-bar { grid-template-columns: 1fr; gap: 20px; text-align: center; } }
@@ -61,52 +85,57 @@
     <div class="top-bar">
         <div class="clock-box" data-aos="fade-right">
             <div id="digital-clock">00:00:00</div>
-            <div id="lunar-date" style="font-size: 0.8rem; color: #aaa;">Lịch âm: Đang tính...</div>
+            <div id="date-lunar">Đang tải lịch...</div>
         </div>
         <header data-aos="fade-down">
             <h1>Gia Han Weather Center</h1>
-            <span class="sub-header">TRUNG TÂM GIÁM SÁT NĂNG LƯỢNG & KHÍ TƯỢNG</span>
+            <span class="header-subtext">TRUNG TÂM GIÁM SÁT NĂNG LƯỢNG & KHÍ TƯỢNG</span>
         </header>
         <div style="text-align: right;" data-aos="fade-left">
-            <select id="city-select" style="padding: 10px; background: #000; border: 1px solid var(--primary); color: #fff; border-radius: 10px;">
-                <option value="19.80,105.77">Thanh Hóa (HQ)</option>
-                <option value="21.02,105.83">Hà Nội</option>
-                <option value="10.82,106.63">TP. Hồ Chí Minh</option>
-            </select>
+            <p id="location-text" style="color: var(--primary); font-size: 0.8rem;">Vị trí: Thanh Hóa</p>
         </div>
     </div>
 
+    <div class="location-control" data-aos="zoom-in">
+        <select id="city-select" class="select-ui">
+            <option value="19.80,105.77" selected>Thanh Hóa</option>
+            <option value="21.02,105.83">Hà Nội</option>
+            <option value="10.82,106.63">TP. Hồ Chí Minh</option>
+            <option value="16.05,108.20">Đà Nẵng</option>
+            <option value="20.84,106.68">Hải Phòng</option>
+            <option value="10.03,105.78">Cần Thơ</option>
+        </select>
+        <button onclick="getUserLocation()" class="btn-gps"><i class="fas fa-location-arrow"></i> Lấy vị trí GPS</button>
+    </div>
+
     <div class="dashboard-grid">
-        <div class="col-1">
+        <div class="col-left">
             <div class="card" data-aos="fade-right">
                 <div class="card-header"><i class="fas fa-satellite-dish"></i> Trạm đo trực tuyến</div>
-                <div class="weather-main">
-                    <div class="temp-large"><span id="curr-temp">--</span>°C</div>
-                    <div id="curr-desc" style="color: var(--primary);">Đang đồng bộ dữ liệu...</div>
-                </div>
+                <div class="temp-main"><span id="curr-temp">--</span>°C</div>
                 <div class="detail-grid">
-                    <div class="detail-item">Độ ẩm <b id="hum">--%</b></div>
-                    <div class="detail-item">Điểm ngưng <b id="dew">--°</b></div>
-                    <div class="detail-item">Áp suất <b id="pres">-- hPa</b></div>
-                    <div class="detail-item">Tầm nhìn <b id="vis">-- km</b></div>
-                    <div class="detail-item">Chỉ số UV <b id="uv">--</b></div>
-                    <div class="detail-item">Bức xạ <b id="solar">-- W/m²</b></div>
+                    <div class="detail-item"><span>Độ ẩm</span><b id="hum">--%</b></div>
+                    <div class="detail-item"><span>Điểm ngưng</span><b id="dew">--°</b></div>
+                    <div class="detail-item"><span>Tầm nhìn</span><b id="vis">-- km</b></div>
+                    <div class="detail-item"><span>Áp suất</span><b id="pres">-- hPa</b></div>
+                    <div class="detail-item"><span>Bức xạ Solar</span><b id="solar">-- W/m²</b></div>
+                    <div class="detail-item"><span>Chỉ số UV</span><b id="uv">--</b></div>
                 </div>
             </div>
         </div>
 
-        <div class="col-2">
+        <div class="col-center">
             <div class="card" data-aos="fade-up">
-                <div class="card-header"><i class="fas fa-chart-line"></i> Phân tích Bức xạ & Nhiệt độ (24h)</div>
+                <div class="card-header"><i class="fas fa-chart-area"></i> Phân tích Bức xạ & Nhiệt độ (24h)</div>
                 <div style="height: 300px;"><canvas id="mainChart"></canvas></div>
             </div>
             <div class="card" data-aos="fade-up">
-                <div class="card-header"><i class="fas fa-map"></i> Radar mây vệ tinh (Real-time)</div>
+                <div class="card-header"><i class="fas fa-satellite"></i> Radar mây vệ tinh (Real-time)</div>
                 <iframe id="windy-map" class="map-frame" src="" frameborder="0"></iframe>
             </div>
         </div>
 
-        <div class="col-3">
+        <div class="col-right">
             <div class="card" data-aos="fade-left">
                 <div class="card-header"><i class="fas fa-calendar-alt"></i> Dự báo 7 ngày tiếp theo</div>
                 <div id="forecast-list"></div>
@@ -118,8 +147,8 @@
 <div id="detailModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal()">&times;</span>
-        <h2 id="modal-date" style="color: var(--primary); margin-bottom: 20px;"></h2>
-        <div id="modal-body" style="text-align: left; line-height: 2;"></div>
+        <h2 id="modal-date" style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px;"></h2>
+        <div id="modal-body" style="line-height: 2.2;"></div>
     </div>
 </div>
 
@@ -129,25 +158,41 @@
     let mainChart = null;
     let weatherData = null;
 
+    // 1. ĐỒNG HỒ & LỊCH ÂM
     function updateClock() {
         const now = new Date();
         document.getElementById('digital-clock').innerText = now.toLocaleTimeString('vi-VN');
-        document.getElementById('lunar-date').innerText = "Ngày " + now.toLocaleDateString('vi-VN') + " | Lịch âm: 14 tháng Giêng, Bính Ngọ";
+        const options = { weekday: 'long', day: 'numeric', month: 'long' };
+        document.getElementById('date-lunar').innerText = now.toLocaleDateString('vi-VN', options) + " | Âm lịch: 14 tháng Giêng, Bính Ngọ";
     }
     setInterval(updateClock, 1000); updateClock();
 
-    async function fetchData(lat, lon) {
-        document.getElementById('windy-map').src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=6&overlay=clouds&product=ecmwf&metricWind=km%2Fh&metricTemp=%C2%B0C`;
-        try {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,shortwave_radiation,wind_speed_10m,surface_pressure,weather_code,visibility&hourly=temperature_2m,shortwave_radiation&daily=temperature_2m_max,temperature_2m_min,uv_index_max,shortwave_radiation_sum&timezone=Asia%2FBangkok`;
-            const res = await fetch(url);
-            weatherData = await res.json();
-            renderUI();
-        } catch (e) { console.error(e); }
+    // 2. XỬ LÝ VỊ TRÍ GPS
+    function getUserLocation() {
+        if (navigator.geolocation) {
+            document.getElementById('location-text').innerText = "Đang xác định GPS...";
+            navigator.geolocation.getCurrentPosition(
+                (pos) => fetchData(pos.coords.latitude, pos.coords.longitude, "📍 Vị trí thực tế"),
+                () => alert("Vui lòng cho phép truy cập vị trí để sử dụng GPS!")
+            );
+        }
     }
 
-    function renderUI() {
-        // Cập nhật thẻ thông số (Dựa theo cấu trúc dubaothoitiet)
+    // 3. LẤY DỮ LIỆU TỪ API
+    async function fetchData(lat, lon, name) {
+        document.getElementById('location-text').innerText = `Vị trí: ${name}`;
+        document.getElementById('windy-map').src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=6&overlay=clouds&product=ecmwf&metricWind=km%2Fh&metricTemp=%C2%B0C`;
+        
+        try {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,shortwave_radiation,wind_speed_10m,surface_pressure,visibility&hourly=temperature_2m,shortwave_radiation&daily=temperature_2m_max,temperature_2m_min,uv_index_max,shortwave_radiation_sum&timezone=Asia%2FBangkok`;
+            const res = await fetch(url);
+            weatherData = await res.json();
+            renderDashboard();
+        } catch (e) { console.error("Lỗi dữ liệu vệ tinh"); }
+    }
+
+    function renderDashboard() {
+        // Cập nhật thẻ thông số (Học tập dubaothoitiet.edu.vn)
         document.getElementById('curr-temp').innerText = Math.round(weatherData.current.temperature_2m);
         document.getElementById('hum').innerText = weatherData.current.relative_humidity_2m + '%';
         document.getElementById('solar').innerText = Math.round(weatherData.current.shortwave_radiation);
@@ -155,7 +200,6 @@
         document.getElementById('vis').innerText = (weatherData.current.visibility / 1000).toFixed(1);
         document.getElementById('uv').innerText = weatherData.daily.uv_index_max[0];
         document.getElementById('dew').innerText = (weatherData.current.temperature_2m - ((100 - weatherData.current.relative_humidity_2m) / 5)).toFixed(1);
-        document.getElementById('curr-desc').innerText = "Trạm đo Gia Han hoạt động ổn định";
 
         // Biểu đồ
         if(mainChart) mainChart.destroy();
@@ -165,14 +209,14 @@
             data: {
                 labels: weatherData.hourly.time.slice(6, 20).map(t => t.split('T')[1]),
                 datasets: [
-                    { label: 'Bức xạ', data: weatherData.hourly.shortwave_radiation.slice(6, 20), borderColor: '#ffcc00', fill: true, backgroundColor: 'rgba(255,204,0,0.05)' },
-                    { label: 'Nhiệt độ', data: weatherData.hourly.temperature_2m.slice(6, 20), borderColor: '#00ffd5' }
+                    { label: 'Bức xạ (W/m²)', data: weatherData.hourly.shortwave_radiation.slice(6, 20), borderColor: '#ffcc00', fill: true, backgroundColor: 'rgba(255,204,0,0.05)', yAxisID: 'y1' },
+                    { label: 'Nhiệt độ (°C)', data: weatherData.hourly.temperature_2m.slice(6, 20), borderColor: '#00ffd5', yAxisID: 'y' }
                 ]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { responsive: true, maintainAspectRatio: false, scales: { y1: { position: 'right', grid: { display: false } } } }
         });
 
-        // Dự báo tuần
+        // Danh sách dự báo
         const list = document.getElementById('forecast-list');
         list.innerHTML = '';
         weatherData.daily.time.forEach((t, i) => {
@@ -190,10 +234,10 @@
         const d = weatherData.daily;
         document.getElementById('modal-date').innerText = "Chi tiết ngày " + d.time[index];
         document.getElementById('modal-body').innerHTML = `
-            <p><i class="fas fa-temperature-high"></i> Cao nhất: <b>${d.temperature_2m_max[index]}°C</b></p>
-            <p><i class="fas fa-temperature-low"></i> Thấp nhất: <b>${d.temperature_2m_min[index]}°C</b></p>
-            <p><i class="fas fa-sun"></i> Bức xạ tổng: <b>${d.shortwave_radiation_sum[index]} MJ/m²</b></p>
-            <p><i class="fas fa-shield-alt"></i> UV Cực đại: <b style="color:var(--primary)">${d.uv_index_max[index]}</b></p>
+            <div style="display:flex; justify-content:space-between"><span>Cao nhất:</span> <b>${d.temperature_2m_max[index]}°C</b></div>
+            <div style="display:flex; justify-content:space-between"><span>Thấp nhất:</span> <b>${d.temperature_2m_min[index]}°C</b></div>
+            <div style="display:flex; justify-content:space-between"><span>Bức xạ tổng:</span> <b>${d.shortwave_radiation_sum[index]} MJ/m²</b></div>
+            <div style="display:flex; justify-content:space-between; color:var(--primary)"><span>UV Cực đại:</span> <b>${d.uv_index_max[index]}</b></div>
         `;
         document.getElementById('detailModal').style.display = "block";
     }
@@ -202,10 +246,11 @@
 
     document.getElementById('city-select').onchange = function() {
         const [lat, lon] = this.value.split(',');
-        fetchData(lat, lon);
+        const name = this.options[this.selectedIndex].text;
+        fetchData(lat, lon, name);
     };
 
-    window.onload = () => fetchData(19.80, 105.77);
+    window.onload = () => fetchData(19.80, 105.77, "Thanh Hóa");
 </script>
 
 </body>
