@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tin Tức Công Nghệ | Gia Han Solutions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #00ffd5;
+            --bg-dark: #0f2027;
+            --card-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg-dark); color: #fff; padding-bottom: 50px; }
+
+        .container { max-width: 1200px; margin: auto; padding: 0 5%; }
+        
+        .header-box { text-align: center; padding: 50px 0; }
+        .header-box h1 { 
+            font-size: 2.5rem; 
+            background: linear-gradient(90deg, #00ffd5, #00bfff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        #news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .news-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 255, 213, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: 0.3s;
+        }
+
+        .news-card:hover { border-color: var(--primary-color); transform: translateY(-5px); }
+
+        .news-img { width: 100%; height: 180px; object-fit: cover; background: #000; }
+        
+        .news-content { padding: 20px; flex-grow: 1; }
+        .source-tag { color: var(--primary-color); font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .news-title { 
+            display: block; margin: 10px 0; color: #fff; text-decoration: none; 
+            font-weight: 600; font-size: 1.1rem; line-height: 1.4;
+        }
+        .news-desc { color: #aaa; font-size: 0.85rem; line-height: 1.5; }
+
+        .btn-load {
+            display: block; margin: 40px auto; padding: 12px 35px;
+            background: transparent; border: 2px solid var(--primary-color);
+            color: var(--primary-color); cursor: pointer; font-weight: bold;
+            border-radius: 30px; transition: 0.3s;
+        }
+        .btn-load:hover { background: var(--primary-color); color: #000; box-shadow: 0 0 15px var(--primary-color); }
+        
+        .error-msg { text-align: center; color: #ff4d4d; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-box">
+        <h1>Bản Tin Hệ Thống</h1>
+        <p>Tự động cập nhật nguồn tin chính thống</p>
+    </div>
+
+    <div id="news-grid">
+        </div>
+
+    <div id="loader" style="text-align:center; padding: 20px;">Đang quét tín hiệu...</div>
+    <button id="load-more-btn" class="btn-load" style="display:none;">TẢI THÊM TIN</button>
+</div>
+
+<script>
+    // Danh sách RSS chính xác từ các báo
+    const RSS_SOURCES = [
+        { name: "Tiền Phong", url: "https://tienphong.vn/rss/cong-nghe-khoa-hoc-204.rss" },
+        { name: "Báo Nhân Dân", url: "https://nhandan.vn/rss/khoa-hoc-cong-nghe-1234.rss" },
+        { name: "CAND", url: "https://cand.com.vn/rss/Khoa-hoc-Quan-su-Phap-luat-42.rss" }
+    ];
+
+    let allNews = [];
+    let visibleCount = 6;
+
+    async function fetchNews() {
+        const grid = document.getElementById('news-grid');
+        const loader = document.getElementById('loader');
+
+        try {
+            // Sử dụng rss2json với API Key mặc định (đã được tối ưu)
+            const promises = RSS_SOURCES.map(source => 
+                fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(source.url)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        return data.items.map(item => ({...item, source: source.name}));
+                    }
+                    return [];
+                })
+            );
+
+            const results = await Promise.all(promises);
+            allNews = results.flat().sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+            loader.style.display = 'none';
+            renderNews();
+            
+            if (allNews.length > visibleCount) {
+                document.getElementById('load-more-btn').style.display = 'block';
+            }
+
+        } catch (error) {
+            loader.innerHTML = `<div class="error-msg">Không thể kết nối máy chủ tin tức. Vui lòng kiểm tra lại kết nối mạng!</div>`;
+        }
+    }
+
+    function renderNews() {
+        const grid = document.getElementById('news-grid');
+        const showThese = allNews.slice(grid.children.length, visibleCount);
+
+        showThese.forEach(item => {
+            const img = item.thumbnail || 'https://via.placeholder.com/400x250/0f2027/00ffd5?text=Gia+Han+Solutions';
+            const card = document.createElement('div');
+            card.className = 'news-card';
+            card.innerHTML = `
+                <img src="${img}" class="news-img">
+                <div class="news-content">
+                    <span class="source-tag">${item.source}</span>
+                    <a href="${item.link}" target="_blank" class="news-title">${item.title}</a>
+                    <p class="news-desc">${stripTags(item.description)}</p>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function stripTags(html) {
+        let doc = new DOMParser().parseFromString(html, 'text/html');
+        return doc.body.textContent || "";
+    }
+
+    document.getElementById('load-more-btn').addEventListener('click', () => {
+        visibleCount += 6;
+        renderNews();
+        if (visibleCount >= allNews.length) {
+            document.getElementById('load-more-btn').style.display = 'none';
+        }
+    });
+
+    // Kích hoạt khi trang sẵn sàng
+    window.onload = fetchNews;
+</script>
+
+</body>
+</html>
