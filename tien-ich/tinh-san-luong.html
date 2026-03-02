@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gia Han Solutions | Công cụ tính sản lượng điện mặt trời</title>
+<title>Công cụ tính hiệu quả điện mặt trời | Gia Han Solutions</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.5.2/ol.css">
@@ -14,7 +14,7 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{background:#0f2027;color:#fff;padding:30px;}
 h1{text-align:center;color:#00ffd5;margin-bottom:5px;}
-.subtitle{text-align:center;color:#aaa;margin-bottom:25px;}
+.subtitle{text-align:center;color:#aaa;margin-bottom:30px;}
 
 .wrapper{
 display:grid;
@@ -30,7 +30,7 @@ border-radius:16px;
 padding:20px;
 }
 
-#map{width:100%;height:450px;border-radius:15px;}
+#map{width:100%;height:400px;border-radius:15px;}
 
 select,input{
 width:100%;
@@ -41,60 +41,43 @@ border:none;
 }
 
 button{
-padding:10px;
+padding:12px;
 border:none;
-border-radius:8px;
+border-radius:10px;
 background:#00ffd5;
-font-weight:600;
+font-weight:700;
 cursor:pointer;
 width:100%;
 margin-top:10px;
 }
 
 .result{
-margin-top:15px;
+margin-top:20px;
 padding:20px;
 background:rgba(0,255,213,0.1);
 border-radius:12px;
 }
 
-.result h3{
-margin-bottom:15px;
-color:#00ffd5;
-}
-
 .result-grid{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:12px;
+gap:15px;
 margin-bottom:20px;
 }
 
 .result-box{
-background:rgba(255,255,255,0.06);
-padding:12px;
+background:rgba(255,255,255,0.07);
+padding:15px;
 border-radius:10px;
 font-size:14px;
+text-align:center;
 }
 
 .result-box b{
 display:block;
-font-size:18px;
+font-size:20px;
 color:#00ffd5;
-margin-top:5px;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-font-size:13px;
-}
-
-table th, table td{
-padding:6px;
-text-align:center;
-border-bottom:1px solid rgba(255,255,255,0.1);
+margin-top:6px;
 }
 
 canvas{
@@ -104,9 +87,20 @@ padding:10px;
 border-radius:12px;
 }
 
+.cta{
+background:#00ffd5;
+color:#000;
+font-size:16px;
+padding:14px;
+border-radius:12px;
+width:100%;
+font-weight:700;
+margin-top:15px;
+}
+
 @media(max-width:1000px){
 .wrapper{grid-template-columns:1fr;}
-#map{height:350px;}
+#map{height:300px;}
 }
 </style>
 </head>
@@ -114,37 +108,32 @@ border-radius:12px;
 <body>
 
 <h1>GIA HAN SOLUTIONS</h1>
-<p class="subtitle">Công cụ tính toán sản lượng điện mặt trời (EPC)</p>
+<p class="subtitle">Tính toán hiệu quả đầu tư điện mặt trời cho gia đình & doanh nghiệp</p>
 
 <div class="wrapper">
 
 <div class="panel">
-<button onclick="getLocation()">📍 Lấy vị trí hiện tại</button>
+<button onclick="getLocation()">📍 Lấy vị trí</button>
 <div id="map"></div>
 <p id="coords">Chưa chọn vị trí</p>
+<canvas id="yieldChart"></canvas>
 </div>
 
 <div class="panel">
 
-<label>Loại hệ thống</label>
-<select id="mode" onchange="applyMode()">
-<option value="res">Hệ dân dụng & SME</option>
-<option value="ci">Hệ C&I / Nhà xưởng</option>
-</select>
-
 <label>Công suất lắp đặt (kWp)</label>
 <input type="number" id="capacity" value="5">
+
+<label>Giá điện trung bình (VNĐ/kWh)</label>
+<input type="number" id="price" value="2500">
 
 <label>Góc nghiêng (°)</label>
 <input type="number" id="angle" value="15">
 
-<label>Hướng (°) – 0° = Hướng Nam</label>
-<input type="number" id="aspect" value="0">
-
-<label>Tổng tổn hao hệ thống (%)</label>
+<label>Tổn hao hệ thống (%)</label>
 <input type="number" id="loss" value="14">
 
-<button onclick="calculate()">TÍNH TOÁN SẢN LƯỢNG</button>
+<button onclick="calculate()">TÍNH HIỆU QUẢ</button>
 
 <div class="result" id="result" style="display:none;"></div>
 
@@ -175,7 +164,7 @@ const coord=ol.proj.toLonLat(evt.coordinate);
 lon=coord[0];
 lat=coord[1];
 document.getElementById("coords").innerText=
-`Vị trí đã chọn: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+`Vị trí: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 });
 
 function getLocation(){
@@ -189,101 +178,68 @@ zoom:15
 });
 }
 
-function applyMode(){
-const mode=document.getElementById("mode").value;
-if(mode==="res"){
-document.getElementById("loss").value=14;
-document.getElementById("angle").value=15;
-}else{
-document.getElementById("loss").value=10;
-document.getElementById("angle").value=10;
-}
-}
-
 async function calculate(){
 
 if(!lat){
-alert("Vui lòng chọn vị trí trước khi tính toán");
+alert("Vui lòng chọn vị trí trên bản đồ");
 return;
 }
 
 const capacity=parseFloat(document.getElementById("capacity").value);
+const price=parseFloat(document.getElementById("price").value);
 const angle=document.getElementById("angle").value;
-const aspect=document.getElementById("aspect").value;
 const loss=document.getElementById("loss").value;
 
-const res=await fetch(`/api/pvgis?lat=${lat}&lon=${lon}&peakpower=${capacity}&angle=${angle}&aspect=${aspect}&loss=${loss}`);
+const url=`https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=${lat}&lon=${lon}&peakpower=${capacity}&angle=${angle}&loss=${loss}&outputformat=json`;
+
+const res=await fetch(url);
 const data=await res.json();
 
 const energy=data.outputs.totals.fixed.E_y;
-const irradiation=data.outputs.totals.fixed["H(i)_y"];
 const monthly=data.outputs.monthly.fixed;
 
-const specificYield=energy/capacity;
-const capacityFactor=energy/(capacity*8760);
-const PR=energy/(irradiation*capacity);
-const P90=energy*0.95;
+const saving=energy*price;
+const investment=capacity*15000000;
+const payback=investment/saving;
 
-let monthTable="";
 let labels=[];
 let values=[];
 
 monthly.forEach(m=>{
 labels.push("Tháng "+m.month);
 values.push(m.E_m);
-monthTable+=`
-<tr>
-<td>Tháng ${m.month}</td>
-<td>${formatVN(Math.round(m.E_m))} kWh</td>
-</tr>`;
 });
 
 document.getElementById("result").style.display="block";
 document.getElementById("result").innerHTML=`
-<h3>KẾT QUẢ TÍNH TOÁN</h3>
+
+<h3 style="color:#00ffd5;margin-bottom:15px;">HIỆU QUẢ ĐẦU TƯ DỰ KIẾN</h3>
 
 <div class="result-grid">
+
 <div class="result-box">
-Sản lượng năm
+Sản lượng điện mỗi năm
 <b>${formatVN(Math.round(energy))} kWh</b>
 </div>
 
 <div class="result-box">
-Sản lượng riêng
-<b>${formatVN(Math.round(specificYield))} kWh/kWp</b>
+Tiết kiệm tiền điện / năm
+<b>${formatVN(Math.round(saving))} VNĐ</b>
 </div>
 
 <div class="result-box">
-Hệ số công suất
-<b>${(capacityFactor*100).toFixed(2)} %</b>
+Chi phí đầu tư dự kiến
+<b>${formatVN(Math.round(investment))} VNĐ</b>
 </div>
 
 <div class="result-box">
-Hiệu suất hệ thống (PR)
-<b>${(PR*100).toFixed(1)} %</b>
+Thời gian hoàn vốn
+<b>${payback.toFixed(1)} năm</b>
 </div>
 
-<div class="result-box">
-Sản lượng P90 (ước tính)
-<b>${formatVN(Math.round(P90))} kWh</b>
-</div>
 </div>
 
-<h4>SẢN LƯỢNG THEO THÁNG</h4>
-
-<table>
-<thead>
-<tr>
-<th>Tháng</th>
-<th>Sản lượng (kWh)</th>
-</tr>
-</thead>
-<tbody>
-${monthTable}
-</tbody>
-</table>
-
-<canvas id="yieldChart"></canvas>
+<button class="cta">NHẬN BÁO GIÁ CHI TIẾT</button>
 `;
 
 if(chartInstance){
@@ -302,11 +258,9 @@ data:values
 }]
 },
 options:{
-indexAxis:'y',  // 👉 Biểu đồ nằm ngang
+indexAxis:'y',
 responsive:true,
-plugins:{
-legend:{display:false}
-},
+plugins:{legend:{display:false}},
 scales:{
 x:{
 ticks:{
