@@ -19,13 +19,20 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{background:var(--bg);color:#fff;overflow:hidden;}
 
-.top-bar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:15px 30px;
-background:rgba(0,0,0,0.4);
-border-bottom:1px solid var(--border);
+.title-box{
+text-align:center;
+}
+
+.title-box h2{
+margin:0;
+font-size:22px;
+}
+
+#live-time{
+margin-top:4px;
+font-size:14px;
+color:var(--primary);
+font-weight:500;
 }
 
 .main-layout{
@@ -224,9 +231,14 @@ height:18px;
   Trang chủ
 </a>
 <div class="top-bar">
-<h2>Gia Han Weather Pro 
-<span id="live-time" style="font-size:14px;color:#00ffd5;margin-left:10px;"></span>
-</h2>
+
+<div></div>
+
+<div class="title-box">
+<h2>Gia Han Weather Pro</h2>
+<div id="live-time"></div>
+</div>
+
 <select id="city-select">
 <option value="19.80,105.77">Thanh Hóa</option>
 <option value="21.02,105.83">Hà Nội</option>
@@ -422,5 +434,6 @@ fetchData(19.80,105.77);
 
 </body>
 </html>
+
 
 
