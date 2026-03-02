@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gia Han Solutions | EPC Solar Calculator</title>
+<title>Gia Han Solutions | Công cụ tính sản lượng điện mặt trời</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.5.2/ol.css">
@@ -114,37 +114,37 @@ border-radius:12px;
 <body>
 
 <h1>GIA HAN SOLUTIONS</h1>
-<p class="subtitle">EPC Solar Yield Calculator – Residential & C&I</p>
+<p class="subtitle">Công cụ tính toán sản lượng điện mặt trời (EPC)</p>
 
 <div class="wrapper">
 
 <div class="panel">
-<button onclick="getLocation()">📍 Lấy vị trí</button>
+<button onclick="getLocation()">📍 Lấy vị trí hiện tại</button>
 <div id="map"></div>
 <p id="coords">Chưa chọn vị trí</p>
 </div>
 
 <div class="panel">
 
-<label>Chế độ hệ thống</label>
+<label>Loại hệ thống</label>
 <select id="mode" onchange="applyMode()">
-<option value="res">EPC Dân dụng & SME</option>
-<option value="ci">EPC C&I / Nhà xưởng</option>
+<option value="res">Hệ dân dụng & SME</option>
+<option value="ci">Hệ C&I / Nhà xưởng</option>
 </select>
 
-<label>Công suất DC (kWp)</label>
+<label>Công suất lắp đặt (kWp)</label>
 <input type="number" id="capacity" value="5">
 
 <label>Góc nghiêng (°)</label>
 <input type="number" id="angle" value="15">
 
-<label>Hướng (°) – 0 = Nam</label>
+<label>Hướng (°) – 0° = Hướng Nam</label>
 <input type="number" id="aspect" value="0">
 
-<label>Tổng tổn hao (%)</label>
+<label>Tổng tổn hao hệ thống (%)</label>
 <input type="number" id="loss" value="14">
 
-<button onclick="calculate()">PHÂN TÍCH EPC</button>
+<button onclick="calculate()">TÍNH TOÁN SẢN LƯỢNG</button>
 
 <div class="result" id="result" style="display:none;"></div>
 
@@ -175,7 +175,7 @@ const coord=ol.proj.toLonLat(evt.coordinate);
 lon=coord[0];
 lat=coord[1];
 document.getElementById("coords").innerText=
-`Vị trí: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+`Vị trí đã chọn: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 });
 
 function getLocation(){
@@ -203,7 +203,7 @@ document.getElementById("angle").value=10;
 async function calculate(){
 
 if(!lat){
-alert("Chọn vị trí trước");
+alert("Vui lòng chọn vị trí trước khi tính toán");
 return;
 }
 
@@ -229,42 +229,42 @@ let labels=[];
 let values=[];
 
 monthly.forEach(m=>{
-labels.push("T"+m.month);
+labels.push("Tháng "+m.month);
 values.push(m.E_m);
 monthTable+=`
 <tr>
-<td>T${m.month}</td>
+<td>Tháng ${m.month}</td>
 <td>${formatVN(Math.round(m.E_m))} kWh</td>
 </tr>`;
 });
 
 document.getElementById("result").style.display="block";
 document.getElementById("result").innerHTML=`
-<h3>KẾT QUẢ PHÂN TÍCH EPC</h3>
+<h3>KẾT QUẢ TÍNH TOÁN</h3>
 
 <div class="result-grid">
 <div class="result-box">
-Annual Yield
+Sản lượng năm
 <b>${formatVN(Math.round(energy))} kWh</b>
 </div>
 
 <div class="result-box">
-Specific Yield
+Sản lượng riêng
 <b>${formatVN(Math.round(specificYield))} kWh/kWp</b>
 </div>
 
 <div class="result-box">
-Capacity Factor
+Hệ số công suất
 <b>${(capacityFactor*100).toFixed(2)} %</b>
 </div>
 
 <div class="result-box">
-Performance Ratio
+Hiệu suất hệ thống (PR)
 <b>${(PR*100).toFixed(1)} %</b>
 </div>
 
 <div class="result-box">
-P90 Estimate
+Sản lượng P90 (ước tính)
 <b>${formatVN(Math.round(P90))} kWh</b>
 </div>
 </div>
@@ -302,12 +302,13 @@ data:values
 }]
 },
 options:{
+indexAxis:'y',  // 👉 Biểu đồ nằm ngang
 responsive:true,
 plugins:{
 legend:{display:false}
 },
 scales:{
-y:{
+x:{
 ticks:{
 callback:function(value){
 return formatVN(value);
