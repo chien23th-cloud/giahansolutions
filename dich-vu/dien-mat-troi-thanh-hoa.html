@@ -17,7 +17,32 @@
         .hero-service { text-align: center; padding: 60px 20px; background: linear-gradient(to bottom, rgba(0,255,213,0.1), transparent); }
         .hero-service h1 { font-size: 2.5rem; color: var(--primary); margin-bottom: 20px; }
         .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; align-items: center; }
-        .content-grid img { width: 100%; border-radius: 20px; border: 1px solid var(--primary); }
+        
+        /* CẬP NHẬT CSS CHO SLIDESHOW */
+        .slideshow-container { 
+            position: relative; 
+            width: 100%; 
+            padding-bottom: 65%; /* Giữ khung hình cố định */
+            overflow: hidden; 
+            border-radius: 20px; 
+            border: 1px solid var(--primary); 
+        }
+        .slideshow-container img { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            opacity: 0; 
+            transition: opacity 1s ease-in-out; 
+            z-index: 1;
+        }
+        .slideshow-container img.active { 
+            opacity: 1; 
+            z-index: 2; 
+        }
+
         .features { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
         .feature-item { background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,255,213,0.1); }
         .feature-item i { color: var(--primary); font-size: 2rem; margin-bottom: 15px; }
@@ -29,12 +54,12 @@
 <body>
     <header>
         <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> TRANG CHỦ</a>
-        <img src="/images/GH.png" alt="Logo" style="height: 40px;">
+        <img src="images/GH.png" alt="Logo" style="height: 40px;">
     </header>
 
     <section class="hero-service">
         <h1>Giải Pháp Điện Mặt Trời</h1>
-        <p>Năng lượng xanh bền vững từ Systech Group</p>
+        <p>Năng lượng xanh bền vững từ Gia Han Solutions</p>
     </section>
 
     <div class="container">
@@ -48,14 +73,19 @@
                     <li><i class="fas fa-check-circle" style="color:var(--primary)"></i> Giảm phát thải CO2, bảo vệ môi trường.</li>
                 </ul>
             </div>
-            <img src="/images/anh1.jpg" alt="Điện mặt trời">
+            
+            <div class="slideshow-container" id="solar-slideshow">
+                <img src="images/sl1.jpg" alt="Điện mặt trời 1" class="active">
+                <img src="images/sl2.jpg" alt="Điện mặt trời 2">
+                <img src="images/sl3.jpg" alt="Điện mặt trời 3">
+            </div>
         </div>
 
         <div class="features">
             <div class="feature-item">
                 <i class="fas fa-tools"></i>
                 <h3>Lắp đặt chuyên nghiệp</h3>
-                <p>Đội ngũ kỹ thuật giàu kinh nghiệm từ Systech Group đảm bảo an toàn tuyệt đối.</p>
+                <p>Đội ngũ kỹ thuật giàu kinh nghiệm từ Gia Han Solutions đảm bảo an toàn tuyệt đối.</p>
             </div>
             <div class="feature-item">
                 <i class="fas fa-chart-line"></i>
@@ -65,7 +95,7 @@
             <div class="feature-item">
                 <i class="fas fa-shield-alt"></i>
                 <h3>Bảo hành dài hạn</h3>
-                <p>Chế độ hậu mãi tận tâm, bảo trì định kỳ định kỳ hệ thống pin.</p>
+                <p>Chế độ hậu mãi tận tâm, bảo trì định kỳ hệ thống pin.</p>
             </div>
         </div>
 
@@ -75,8 +105,21 @@
             <a href="index.html#contact" class="btn">Nhận báo giá ngay</a>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const slides = document.querySelectorAll('#solar-slideshow img');
+            let currentSlide = 0;
+            const intervalTime = 4000; // 4 giây đổi ảnh một lần
+
+            function nextSlide() {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }
+
+            setInterval(nextSlide, intervalTime);
+        });
+    </script>
 </body>
-
 </html>
-
-

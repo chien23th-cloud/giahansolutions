@@ -62,12 +62,35 @@
             align-items: center;
             margin-bottom: 80px;
         }
-        .info-image img {
+
+        /* --- STYLE MỚI CHO SLIDESHOW --- */
+        .info-image {
+            position: relative;
             width: 100%;
+            padding-bottom: 65%; /* Tỷ lệ khung hình cố định */
+            overflow: hidden;
             border-radius: 24px;
             border: 2px solid rgba(0, 255, 213, 0.3);
             box-shadow: 0 0 30px rgba(0, 255, 213, 0.2);
         }
+
+        .info-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            z-index: 1;
+        }
+
+        .info-image img.active {
+            opacity: 1;
+            z-index: 2;
+        }
+        /* ------------------------------- */
 
         .info-text h2 { color: #00ffd5; margin-bottom: 20px; font-size: 2rem; }
         .info-text p { color: #ccc; line-height: 1.8; margin-bottom: 20px; text-align: justify; }
@@ -129,10 +152,10 @@
 <div id="particles-js"></div>
 
 <header>
-    <a href="/" class="back-home">
+    <a href="index.html" class="back-home">
         <i class="fas fa-arrow-left"></i> TRANG CHỦ
     </a>
-    <img src="/images/GH.png" alt="Logo" style="height: 40px;">
+    <img src="images/GH.png" alt="Logo" style="height: 40px;">
 </header>
 
 <section class="service-hero" data-aos="zoom-in">
@@ -147,9 +170,10 @@
             <p>Tại Gia Han Solutions, chúng tôi thấu hiểu rằng máy tính là công cụ làm việc không thể thiếu của bạn. Mọi sự cố từ lỗi Windows, nhiễm virus đến hỏng hóc phần cứng nặng nề đều được đội ngũ kỹ thuật viên giàu kinh nghiệm xử lý triệt để.</p>
             <p>Chúng tôi kế thừa tiêu chuẩn chất lượng từ <strong>Gia Han Solutions</strong>, cam kết sử dụng linh kiện chính hãng, bảo hành dài hạn và tuyệt đối bảo mật dữ liệu cá nhân của khách hàng trong suốt quá trình sửa chữa.</p>
         </div>
-        <div class="info-image" data-aos="fade-left">
-            <img src="/images/anh5.jpg" alt="Kỹ thuật PC Gia Hân">
-        </div>
+        
+        <div class="info-image" data-aos="fade-left" id="pc-slideshow">
+            <img src="images/pc1.jpg" alt="Kỹ thuật PC 1" class="active">
+            <img src="images/pc2.jpg" alt="Kỹ thuật PC 2"> <img src="images/pc3.jpg" alt="Kỹ thuật PC 3"> </div>
     </div>
 
     <h2 style="text-align: center; color: #00ffd5; margin-bottom: 40px;">DỊCH VỤ CHUYÊN BIỆT</h2>
@@ -190,6 +214,7 @@
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
 <script>
+    // Particles.js config
     particlesJS("particles-js", {
         "particles": {
             "number": { "value": 40 },
@@ -200,9 +225,25 @@
             "move": { "enable": true, "speed": 2 }
         }
     });
+    
+    // AOS init
     AOS.init({ duration: 1000, once: true });
+
+    // --- SCRIPT ĐIỀU KHIỂN SLIDESHOW ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const slides = document.querySelectorAll('#pc-slideshow img');
+        let currentSlide = 0;
+        const intervalTime = 4000; // 4 giây đổi ảnh một lần
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        setInterval(nextSlide, intervalTime);
+    });
 </script>
 
 </body>
-
 </html>

@@ -62,11 +62,33 @@
             align-items: center;
             margin-bottom: 80px;
         }
-        .info-image img {
+
+        /* STYLE MỚI CHO SLIDESHOW */
+        .info-image {
+            position: relative;
             width: 100%;
+            padding-bottom: 65%; /* Giữ tỷ lệ khung hình cố định */
+            overflow: hidden;
             border-radius: 24px;
             border: 2px solid rgba(0, 255, 213, 0.3);
             box-shadow: 0 0 30px rgba(0, 255, 213, 0.2);
+        }
+
+        .info-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            z-index: 1;
+        }
+
+        .info-image img.active {
+            opacity: 1;
+            z-index: 2;
         }
 
         .info-text h2 { color: #00ffd5; margin-bottom: 20px; font-size: 2rem; }
@@ -129,10 +151,10 @@
 <div id="particles-js"></div>
 
 <header>
-    <a href="/" class="back-home">
+    <a href="index.html" class="back-home">
         <i class="fas fa-arrow-left"></i> TRANG CHỦ
     </a>
-    <img src="/images/GH.png" alt="Logo" style="height: 40px;">
+    <img src="images/GH.png" alt="Logo" style="height: 40px;">
 </header>
 
 <section class="service-hero" data-aos="zoom-in">
@@ -145,11 +167,12 @@
         <div class="info-text" data-aos="fade-right">
             <h2>Hệ thống mạng ổn định là mạch máu của doanh nghiệp</h2>
             <p>Trong thời đại số hóa, một hạ tầng mạng yếu kém sẽ kìm hãm sự phát triển của bạn. Gia Han Solutions cung cấp dịch vụ tư vấn, thiết kế và thi công hệ thống mạng LAN, Wifi chuyên dụng, Tổng đài nội bộ và Server cho văn phòng, khách sạn, nhà xưởng.</p>
-            <p>Chúng tôi kế thừa năng lực kỹ thuật từ <strong>Systech Group</strong>, đảm bảo hệ thống luôn vận hành với tốc độ cao nhất, bảo mật dữ liệu tuyệt đối và khả năng mở rộng linh hoạt trong tương lai.</p>
+            <p>Chúng tôi kế thừa năng lực kỹ thuật từ <strong>Kinh Nghiệm Thực Hiện Dự Án</strong>, đảm bảo hệ thống luôn vận hành với tốc độ cao nhất, bảo mật dữ liệu tuyệt đối và khả năng mở rộng linh hoạt trong tương lai.</p>
         </div>
-        <div class="info-image" data-aos="fade-left">
-            <img src="/images/anh4.jpg" alt="Hạ tầng mạng Gia Han">
-        </div>
+        
+        <div class="info-image" data-aos="fade-left" id="network-slideshow">
+            <img src="images/htm1.jpg" alt="Hạ tầng mạng 1" class="active">
+            <img src="images/htm2.jpg" alt="Hạ tầng mạng 2"> <img src="images/htm3.jpg" alt="Hạ tầng mạng 3"> </div>
     </div>
 
     <h2 style="text-align: center; color: #00ffd5; margin-bottom: 40px;">DỊCH VỤ CỐT LÕI</h2>
@@ -190,6 +213,7 @@
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
 <script>
+    // Khởi tạo Particles
     particlesJS("particles-js", {
         "particles": {
             "number": { "value": 45 },
@@ -200,9 +224,25 @@
             "move": { "enable": true, "speed": 2 }
         }
     });
+
+    // Khởi tạo AOS
     AOS.init({ duration: 1000, once: true });
+
+    // SCRIPT ĐIỀU KHIỂN SLIDESHOW
+    document.addEventListener("DOMContentLoaded", function() {
+        const slides = document.querySelectorAll('#network-slideshow img');
+        let currentSlide = 0;
+        const intervalTime = 4000; // 4 giây đổi ảnh một lần
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        setInterval(nextSlide, intervalTime);
+    });
 </script>
 
 </body>
-
 </html>
