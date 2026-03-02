@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.5.2/ol.css">
 <script src="https://cdn.jsdelivr.net/npm/ol@v7.5.2/dist/ol.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
@@ -18,6 +19,7 @@ h1{text-align:center;color:#00ffd5;margin-bottom:5px;}
 .wrapper{
 display:grid;
 grid-template-columns:2fr 1fr;
+grid-template-rows:auto auto;
 gap:25px;
 max-width:1400px;
 margin:auto;
@@ -48,6 +50,12 @@ font-weight:600;
 cursor:pointer;
 width:100%;
 margin-top:10px;
+transition:0.3s;
+}
+
+button:hover{
+transform:translateY(-2px);
+box-shadow:0 8px 20px rgba(0,255,213,0.4);
 }
 
 .result{
@@ -55,102 +63,54 @@ margin-top:15px;
 padding:20px;
 background:rgba(0,255,213,0.1);
 border-radius:12px;
+opacity:0;
+transform:translateY(20px);
+transition:all 0.6s ease;
 }
 
-.big{font-size:24px;font-weight:700;color:#00ffd5;}
+.result.show{
+opacity:1;
+transform:translateY(0);
+}
+
+.chart-panel{
+grid-column:1 / span 2;
+background:rgba(255,255,255,0.05);
+border-radius:16px;
+padding:25px;
+display:none;
+opacity:0;
+transform:translateY(30px);
+transition:all 0.7s ease;
+}
+
+.chart-panel.show{
+opacity:1;
+transform:translateY(0);
+}
+
+.chart-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:30px;
+margin-top:20px;
+}
+
+canvas{
+width:100% !important;
+height:380px !important;
+}
 
 @media(max-width:1000px){
 .wrapper{grid-template-columns:1fr;}
+.chart-grid{grid-template-columns:1fr;}
 #map{height:350px;}
 }
-  /* Home Button */
-.home-btn{
-position:absolute;
-top:20px;
-left:20px;
-display:flex;
-align-items:center;
-gap:6px;
-padding:8px 14px;
-border-radius:12px;
-background:rgba(255,255,255,0.08);
-backdrop-filter:blur(8px);
-border:1px solid rgba(255,255,255,0.15);
-color:#00ffd5;
-text-decoration:none;
-font-weight:600;
-transition:all 0.3s ease;
-z-index:999;
-}
-
-.home-btn svg{
-transition:transform 0.3s ease;
-}
-
-.home-btn:hover{
-background:#00ffd5;
-color:#000;
-box-shadow:0 4px 12px rgba(0,255,213,0.4);
-}
-
-.home-btn:hover svg{
-transform:translateX(-3px);
-}
-
-/* Footer */
-footer{
-margin-top:60px;
-padding:30px;
-background:rgba(255,255,255,0.05);
-border-top:1px solid rgba(255,255,255,0.1);
-text-align:center;
-font-size:14px;
-color:#aaa;
-}
-
-footer .brand{
-color:#00ffd5;
-font-weight:600;
-font-size:16px;
-margin-bottom:8px;
-}
-
-/* Floating Buttons */
-.float{
-position:fixed;
-right:20px;
-width:55px;
-height:55px;
-border-radius:50%;
-display:flex;
-align-items:center;
-justify-content:center;
-box-shadow:0 5px 15px rgba(0,0,0,0.4);
-cursor:pointer;
-z-index:999;
-}
-
-.messenger{bottom:90px;background:#0084ff;}
-.zalo{bottom:20px;background:#0068ff;}
-
-.float img{width:28px;}
 </style>
 </head>
 
 <body>
-<a href="/" class="home-btn">
-  <svg xmlns="http://www.w3.org/2000/svg"
-       width="18" height="18"
-       viewBox="0 0 24 24"
-       fill="none"
-       stroke="currentColor"
-       stroke-width="2"
-       stroke-linecap="round"
-       stroke-linejoin="round">
-    <path d="M15 18l-6-6 6-6"/>
-  </svg>
-  <span>Trang chủ</span>
-</a>
+
 <h1>GIA HAN SOLUTIONS</h1>
 <p class="subtitle">EPC Solar Yield Calculator – Residential & C&I</p>
 
@@ -164,19 +124,13 @@ z-index:999;
 
 <div class="panel">
 
-<label>Chế độ hệ thống</label>
-<select id="mode" onchange="applyMode()">
-<option value="res">EPC Dân dụng & SME</option>
-<option value="ci">EPC C&I / Nhà xưởng</option>
-</select>
-
 <label>Công suất DC (kWp)</label>
 <input type="number" id="capacity" value="5">
 
 <label>Góc nghiêng (°)</label>
 <input type="number" id="angle" value="15">
 
-<label>Hướng (°) – 0 = Nam</label>
+<label>Hướng (°)</label>
 <input type="number" id="aspect" value="0">
 
 <label>Tổng tổn hao (%)</label>
@@ -184,15 +138,35 @@ z-index:999;
 
 <button onclick="calculate()">PHÂN TÍCH EPC</button>
 
-<div class="result" id="result" style="display:none;"></div>
+<div class="result" id="result"></div>
 
 </div>
+
+<div class="chart-panel" id="chartPanel">
+<h3>Phân tích sản lượng & bức xạ</h3>
+
+<div class="chart-grid">
+<div>
+<h4>Sản lượng tháng (kWh)</h4>
+<canvas id="energyChart"></canvas>
+</div>
+
+<div>
+<h4>Irradiation vs Energy</h4>
+<canvas id="compareChart"></canvas>
+</div>
+</div>
+
+</div>
+
 </div>
 
 <script>
 
 let lat=null;
 let lon=null;
+let energyChart=null;
+let compareChart=null;
 
 const map=new ol.Map({
 target:'map',
@@ -217,20 +191,10 @@ lat=pos.coords.latitude;
 lon=pos.coords.longitude;
 map.getView().animate({
 center:ol.proj.fromLonLat([lon,lat]),
-zoom:15
+zoom:15,
+duration:1200
 });
 });
-}
-
-function applyMode(){
-const mode=document.getElementById("mode").value;
-if(mode==="res"){
-document.getElementById("loss").value=14;
-document.getElementById("angle").value=15;
-}else{
-document.getElementById("loss").value=10;
-document.getElementById("angle").value=10;
-}
 }
 
 async function calculate(){
@@ -257,46 +221,83 @@ const capacityFactor=energy/(capacity*8760);
 const PR=energy/(irradiation*capacity);
 const P90=energy*0.95;
 
-let monthTable="";
+let labels=[];
+let energyValues=[];
+let irradiationValues=[];
+
 monthly.forEach(m=>{
-monthTable+=`<tr><td>${m.month}</td><td>${m.E_m.toFixed(0)} kWh</td></tr>`;
+labels.push("T"+m.month);
+energyValues.push(m.E_m);
+irradiationValues.push(m["H(i)_m"]);
 });
 
-document.getElementById("result").style.display="block";
-document.getElementById("result").innerHTML=`
+const resultBox=document.getElementById("result");
+resultBox.innerHTML=`
 <h3>Kết quả phân tích EPC</h3>
-<p><b>Annual Yield:</b> ${energy.toFixed(0)} kWh</p>
+<p><b>Sản lượng năm:</b> ${energy.toFixed(0)} kWh</p>
 <p><b>Specific Yield:</b> ${specificYield.toFixed(0)} kWh/kWp</p>
 <p><b>Capacity Factor:</b> ${(capacityFactor*100).toFixed(2)} %</p>
-<p><b>PR (xấp xỉ):</b> ${(PR*100).toFixed(1)} %</p>
+<p><b>PR:</b> ${(PR*100).toFixed(1)} %</p>
 <p><b>P90:</b> ${P90.toFixed(0)} kWh</p>
-<hr>
-<h4>Sản lượng theo tháng</h4>
-<table style="width:100%;font-size:13px">${monthTable}</table>
 `;
+resultBox.classList.add("show");
+
+/* HIỆN BIỂU ĐỒ */
+const chartPanel=document.getElementById("chartPanel");
+chartPanel.style.display="block";
+setTimeout(()=>{chartPanel.classList.add("show");},100);
+
+/* Destroy old */
+if(energyChart) energyChart.destroy();
+if(compareChart) compareChart.destroy();
+
+/* Chart 1 */
+energyChart=new Chart(document.getElementById("energyChart"),{
+type:'bar',
+data:{
+labels:labels,
+datasets:[{
+label:'Energy (kWh)',
+data:energyValues
+}]
+},
+options:{
+responsive:true,
+animation:{duration:1500}
 }
+});
 
+/* Chart 2 */
+compareChart=new Chart(document.getElementById("compareChart"),{
+type:'line',
+data:{
+labels:labels,
+datasets:[
+{
+label:'Irradiation (kWh/m²)',
+data:irradiationValues,
+yAxisID:'y1'
+},
+{
+label:'Energy (kWh)',
+data:energyValues,
+yAxisID:'y2'
+}
+]
+},
+options:{
+responsive:true,
+interaction:{mode:'index',intersect:false},
+animation:{duration:1800},
+scales:{
+y1:{type:'linear',position:'left'},
+y2:{type:'linear',position:'right'}
+}
+}
+});
+
+}
 </script>
-<footer>
-  <div class="brand">GIA HAN SOLUTIONS</div>
-  <div>Giải pháp điện mặt trời – EPC dân dụng & C&I</div>
-  <div>Hotline: 0981 825 636</div>
-  <div>Email: admin@giahansolutions.io.vn</div>
-  <div>Website: https://giahansolutions.io.vn</div>
-</footer>
 
-<!-- Messenger -->
-<a href="https://m.me/669698252892555" target="_blank">
-  <div class="float messenger">
-    <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png">
-  </div>
-</a>
-
-<!-- Zalo -->
-<a href="https://zalo.me/0981825636" target="_blank">
-  <div class="float zalo">
-    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968841.png">
-  </div>
-</a>
 </body>
 </html>
