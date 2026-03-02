@@ -3,19 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tính hiệu quả điện mặt trời | Gia Han Solutions</title>
+<title>Gia Han Solutions | EPC Solar Calculator</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.5.2/ol.css">
 <script src="https://cdn.jsdelivr.net/npm/ol@v7.5.2/dist/ol.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{background:#0f2027;color:#fff;padding:30px;overflow-x:hidden;}
-
+body{background:#0f2027;color:#fff;padding:30px;}
 h1{text-align:center;color:#00ffd5;margin-bottom:5px;}
-.subtitle{text-align:center;color:#aaa;margin-bottom:30px;}
+.subtitle{text-align:center;color:#aaa;margin-bottom:25px;}
 
 .wrapper{
 display:grid;
@@ -23,37 +21,15 @@ grid-template-columns:2fr 1fr;
 gap:25px;
 max-width:1400px;
 margin:auto;
-transition:all 0.6s ease;
 }
 
 .panel{
 background:rgba(255,255,255,0.05);
 border-radius:16px;
 padding:20px;
-transition:all 0.6s ease;
 }
 
-#map{
-width:100%;
-height:420px;
-border-radius:15px;
-transition:height 0.6s ease;
-}
-
-#chart-panel{
-opacity:0;
-transform:translateY(40px);
-transition:all 0.6s ease;
-}
-
-.wrapper.has-result #chart-panel{
-opacity:1;
-transform:translateY(0);
-}
-
-.wrapper.has-result #map{
-height:280px;
-}
+#map{width:100%;height:450px;border-radius:15px;}
 
 select,input{
 width:100%;
@@ -64,115 +40,151 @@ border:none;
 }
 
 button{
-padding:12px;
+padding:10px;
 border:none;
-border-radius:10px;
+border-radius:8px;
 background:#00ffd5;
-font-weight:700;
+font-weight:600;
 cursor:pointer;
 width:100%;
 margin-top:10px;
-transition:transform 0.2s;
-}
-
-button:hover{
-transform:scale(1.03);
 }
 
 .result{
-margin-top:20px;
-padding:20px;
-background:rgba(0,255,213,0.12);
-border-radius:12px;
-opacity:0;
-transform:translateX(40px);
-transition:all 0.6s ease;
-}
-
-.wrapper.has-result .result{
-opacity:1;
-transform:translateX(0);
-}
-
-.result-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:15px;
-margin-bottom:20px;
-}
-
-.result-box{
-background:rgba(255,255,255,0.08);
-padding:15px;
-border-radius:12px;
-text-align:center;
-}
-
-.result-box b{
-display:block;
-font-size:20px;
-color:#00ffd5;
-margin-top:6px;
-}
-
-canvas{
 margin-top:15px;
-background:rgba(255,255,255,0.05);
-padding:10px;
+padding:20px;
+background:rgba(0,255,213,0.1);
 border-radius:12px;
 }
 
-.cta{
-background:#00ffd5;
-color:#000;
-font-size:16px;
-padding:14px;
-border-radius:12px;
-font-weight:700;
-margin-top:10px;
-}
+.big{font-size:24px;font-weight:700;color:#00ffd5;}
 
 @media(max-width:1000px){
 .wrapper{grid-template-columns:1fr;}
+#map{height:350px;}
 }
+  /* Home Button */
+.home-btn{
+position:absolute;
+top:20px;
+left:20px;
+display:flex;
+align-items:center;
+gap:6px;
+padding:8px 14px;
+border-radius:12px;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(8px);
+border:1px solid rgba(255,255,255,0.15);
+color:#00ffd5;
+text-decoration:none;
+font-weight:600;
+transition:all 0.3s ease;
+z-index:999;
+}
+
+.home-btn svg{
+transition:transform 0.3s ease;
+}
+
+.home-btn:hover{
+background:#00ffd5;
+color:#000;
+box-shadow:0 4px 12px rgba(0,255,213,0.4);
+}
+
+.home-btn:hover svg{
+transform:translateX(-3px);
+}
+
+/* Footer */
+footer{
+margin-top:60px;
+padding:30px;
+background:rgba(255,255,255,0.05);
+border-top:1px solid rgba(255,255,255,0.1);
+text-align:center;
+font-size:14px;
+color:#aaa;
+}
+
+footer .brand{
+color:#00ffd5;
+font-weight:600;
+font-size:16px;
+margin-bottom:8px;
+}
+
+/* Floating Buttons */
+.float{
+position:fixed;
+right:20px;
+width:55px;
+height:55px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:0 5px 15px rgba(0,0,0,0.4);
+cursor:pointer;
+z-index:999;
+}
+
+.messenger{bottom:90px;background:#0084ff;}
+.zalo{bottom:20px;background:#0068ff;}
+
+.float img{width:28px;}
 </style>
 </head>
 
 <body>
-
+<a href="/" class="home-btn">
+  <svg xmlns="http://www.w3.org/2000/svg"
+       width="18" height="18"
+       viewBox="0 0 24 24"
+       fill="none"
+       stroke="currentColor"
+       stroke-width="2"
+       stroke-linecap="round"
+       stroke-linejoin="round">
+    <path d="M15 18l-6-6 6-6"/>
+  </svg>
+  <span>Trang chủ</span>
+</a>
 <h1>GIA HAN SOLUTIONS</h1>
-<p class="subtitle">Công cụ tính toán hiệu quả đầu tư điện mặt trời</p>
+<p class="subtitle">EPC Solar Yield Calculator – Residential & C&I</p>
 
-<div class="wrapper" id="mainWrapper">
+<div class="wrapper">
 
 <div class="panel">
 <button onclick="getLocation()">📍 Lấy vị trí</button>
 <div id="map"></div>
 <p id="coords">Chưa chọn vị trí</p>
-
-<div id="chart-panel">
-<h3 style="color:#00ffd5;margin-top:20px;">SẢN LƯỢNG THEO THÁNG</h3>
-<canvas id="yieldChart"></canvas>
-</div>
 </div>
 
 <div class="panel">
 
-<label>Công suất lắp đặt (kWp)</label>
-<input type="number" id="capacity" value="5">
+<label>Chế độ hệ thống</label>
+<select id="mode" onchange="applyMode()">
+<option value="res">EPC Dân dụng & SME</option>
+<option value="ci">EPC C&I / Nhà xưởng</option>
+</select>
 
-<label>Giá điện trung bình (VNĐ/kWh)</label>
-<input type="number" id="price" value="2500">
+<label>Công suất DC (kWp)</label>
+<input type="number" id="capacity" value="5">
 
 <label>Góc nghiêng (°)</label>
 <input type="number" id="angle" value="15">
 
-<label>Tổn hao hệ thống (%)</label>
+<label>Hướng (°) – 0 = Nam</label>
+<input type="number" id="aspect" value="0">
+
+<label>Tổng tổn hao (%)</label>
 <input type="number" id="loss" value="14">
 
-<button onclick="calculate()">TÍNH HIỆU QUẢ</button>
+<button onclick="calculate()">PHÂN TÍCH EPC</button>
 
-<div class="result" id="result"></div>
+<div class="result" id="result" style="display:none;"></div>
 
 </div>
 </div>
@@ -181,11 +193,6 @@ margin-top:10px;
 
 let lat=null;
 let lon=null;
-let chartInstance=null;
-
-function formatVN(num){
-return new Intl.NumberFormat('vi-VN').format(num);
-}
 
 const map=new ol.Map({
 target:'map',
@@ -215,104 +222,81 @@ zoom:15
 });
 }
 
+function applyMode(){
+const mode=document.getElementById("mode").value;
+if(mode==="res"){
+document.getElementById("loss").value=14;
+document.getElementById("angle").value=15;
+}else{
+document.getElementById("loss").value=10;
+document.getElementById("angle").value=10;
+}
+}
+
 async function calculate(){
 
 if(!lat){
-alert("Vui lòng chọn vị trí trên bản đồ");
+alert("Chọn vị trí trước");
 return;
 }
 
-const wrapper=document.getElementById("mainWrapper");
-
-const capacity=parseFloat(document.getElementById("capacity").value);
-const price=parseFloat(document.getElementById("price").value);
+const capacity=document.getElementById("capacity").value;
 const angle=document.getElementById("angle").value;
+const aspect=document.getElementById("aspect").value;
 const loss=document.getElementById("loss").value;
 
-const url=`https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=${lat}&lon=${lon}&peakpower=${capacity}&angle=${angle}&loss=${loss}&outputformat=json`;
-
-const res=await fetch(url);
+const res=await fetch(`/api/pvgis?lat=${lat}&lon=${lon}&peakpower=${capacity}&angle=${angle}&aspect=${aspect}&loss=${loss}`);
 const data=await res.json();
 
 const energy=data.outputs.totals.fixed.E_y;
+const irradiation=data.outputs.totals.fixed["H(i)_y"];
 const monthly=data.outputs.monthly.fixed;
 
-const saving=energy*price;
-const investment=capacity*15000000;
-const payback=investment/saving;
+const specificYield=energy/capacity;
+const capacityFactor=energy/(capacity*8760);
+const PR=energy/(irradiation*capacity);
+const P90=energy*0.95;
 
-let labels=[];
-let values=[];
-
+let monthTable="";
 monthly.forEach(m=>{
-labels.push("Tháng "+m.month);
-values.push(m.E_m);
+monthTable+=`<tr><td>${m.month}</td><td>${m.E_m.toFixed(0)} kWh</td></tr>`;
 });
 
-wrapper.classList.add("has-result");
-
+document.getElementById("result").style.display="block";
 document.getElementById("result").innerHTML=`
-<h3 style="color:#00ffd5;margin-bottom:15px;">HIỆU QUẢ ĐẦU TƯ DỰ KIẾN</h3>
-
-<div class="result-grid">
-<div class="result-box">
-Sản lượng mỗi năm
-<b>${formatVN(Math.round(energy))} kWh</b>
-</div>
-
-<div class="result-box">
-Tiết kiệm mỗi năm
-<b>${formatVN(Math.round(saving))} VNĐ</b>
-</div>
-
-<div class="result-box">
-Chi phí đầu tư
-<b>${formatVN(Math.round(investment))} VNĐ</b>
-</div>
-
-<div class="result-box">
-Hoàn vốn
-<b>${payback.toFixed(1)} năm</b>
-</div>
-</div>
-
-<button class="cta">NHẬN BÁO GIÁ CHI TIẾT</button>
+<h3>Kết quả phân tích EPC</h3>
+<p><b>Annual Yield:</b> ${energy.toFixed(0)} kWh</p>
+<p><b>Specific Yield:</b> ${specificYield.toFixed(0)} kWh/kWp</p>
+<p><b>Capacity Factor:</b> ${(capacityFactor*100).toFixed(2)} %</p>
+<p><b>PR (xấp xỉ):</b> ${(PR*100).toFixed(1)} %</p>
+<p><b>P90:</b> ${P90.toFixed(0)} kWh</p>
+<hr>
+<h4>Sản lượng theo tháng</h4>
+<table style="width:100%;font-size:13px">${monthTable}</table>
 `;
-
-if(chartInstance){
-chartInstance.destroy();
-}
-
-const ctx=document.getElementById("yieldChart");
-
-chartInstance=new Chart(ctx,{
-type:'bar',
-data:{
-labels:labels,
-datasets:[{
-label:'Sản lượng (kWh)',
-data:values
-}]
-},
-options:{
-responsive:true,
-plugins:{legend:{display:false}},
-scales:{
-y:{beginAtZero:true},
-x:{
-ticks:{
-callback:function(value){
-return formatVN(value);
-}
-}
-}
-}
-}
-});
-
 }
 
 </script>
+<footer>
+  <div class="brand">GIA HAN SOLUTIONS</div>
+  <div>Giải pháp điện mặt trời – EPC dân dụng & C&I</div>
+  <div>Hotline: 0981 825 636</div>
+  <div>Email: admin@giahansolutions.io.vn</div>
+  <div>Website: https://giahansolutions.io.vn</div>
+</footer>
 
+<!-- Messenger -->
+<a href="https://m.me/669698252892555" target="_blank">
+  <div class="float messenger">
+    <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png">
+  </div>
+</a>
+
+<!-- Zalo -->
+<a href="https://zalo.me/0981825636" target="_blank">
+  <div class="float zalo">
+    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968841.png">
+  </div>
+</a>
 </body>
 </html>
