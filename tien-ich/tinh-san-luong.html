@@ -2,201 +2,301 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Tính Sản Lượng Điện Mặt Trời | Gia Han Solutions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gia Han Solutions | EPC Solar Calculator</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.5.2/ol.css">
+<script src="https://cdn.jsdelivr.net/npm/ol@v7.5.2/dist/ol.js"></script>
 
 <style>
-body{font-family:Arial;background:#0f172a;color:#fff;margin:0;padding:30px;}
-.container{max-width:1100px;margin:auto;}
-h2{color:#00ffd5}
-.section{background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;margin-bottom:20px;}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;}
-input,button{padding:8px;border-radius:6px;border:none;width:100%;margin-top:5px;}
-button{background:#00ffd5;font-weight:600;cursor:pointer;}
-.card{background:rgba(255,255,255,0.06);padding:15px;border-radius:10px;font-size:14px;}
-.card .label{font-size:12px;color:#aaa;}
-.highlight{background:rgba(0,255,213,0.2);font-weight:600;}
-footer{margin-top:40px;text-align:center;font-size:13px;color:#aaa;}
-#error{color:#ff6b6b;margin-top:10px;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#0f2027;color:#fff;padding:30px;}
+h1{text-align:center;color:#00ffd5;margin-bottom:5px;}
+.subtitle{text-align:center;color:#aaa;margin-bottom:25px;}
+
+.wrapper{
+display:grid;
+grid-template-columns:2fr 1fr;
+gap:25px;
+max-width:1400px;
+margin:auto;
+}
+
+.panel{
+background:rgba(255,255,255,0.05);
+border-radius:16px;
+padding:20px;
+}
+
+#map{width:100%;height:450px;border-radius:15px;}
+
+select,input{
+width:100%;
+padding:8px;
+margin-bottom:10px;
+border-radius:6px;
+border:none;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:8px;
+background:#00ffd5;
+font-weight:600;
+cursor:pointer;
+width:100%;
+margin-top:10px;
+}
+
+.result{
+margin-top:15px;
+padding:20px;
+background:rgba(0,255,213,0.1);
+border-radius:12px;
+}
+
+.big{font-size:24px;font-weight:700;color:#00ffd5;}
+
+@media(max-width:1000px){
+.wrapper{grid-template-columns:1fr;}
+#map{height:350px;}
+}
+  /* Home Button */
+.home-btn{
+position:absolute;
+top:20px;
+left:20px;
+display:flex;
+align-items:center;
+gap:6px;
+padding:8px 14px;
+border-radius:12px;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(8px);
+border:1px solid rgba(255,255,255,0.15);
+color:#00ffd5;
+text-decoration:none;
+font-weight:600;
+transition:all 0.3s ease;
+z-index:999;
+}
+
+.home-btn svg{
+transition:transform 0.3s ease;
+}
+
+.home-btn:hover{
+background:#00ffd5;
+color:#000;
+box-shadow:0 4px 12px rgba(0,255,213,0.4);
+}
+
+.home-btn:hover svg{
+transform:translateX(-3px);
+}
+
+/* Footer */
+footer{
+margin-top:60px;
+padding:30px;
+background:rgba(255,255,255,0.05);
+border-top:1px solid rgba(255,255,255,0.1);
+text-align:center;
+font-size:14px;
+color:#aaa;
+}
+
+footer .brand{
+color:#00ffd5;
+font-weight:600;
+font-size:16px;
+margin-bottom:8px;
+}
+
+/* Floating Buttons */
+.float{
+position:fixed;
+right:20px;
+width:55px;
+height:55px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:0 5px 15px rgba(0,0,0,0.4);
+cursor:pointer;
+z-index:999;
+}
+
+.messenger{bottom:90px;background:#0084ff;}
+.zalo{bottom:20px;background:#0068ff;}
+
+.float img{width:28px;}
 </style>
 </head>
 
 <body>
+<a href="/" class="home-btn">
+  <svg xmlns="http://www.w3.org/2000/svg"
+       width="18" height="18"
+       viewBox="0 0 24 24"
+       fill="none"
+       stroke="currentColor"
+       stroke-width="2"
+       stroke-linecap="round"
+       stroke-linejoin="round">
+    <path d="M15 18l-6-6 6-6"/>
+  </svg>
+  <span>Trang chủ</span>
+</a>
+<h1>GIA HAN SOLUTIONS</h1>
+<p class="subtitle">EPC Solar Yield Calculator – Residential & C&I</p>
 
-<div class="container">
+<div class="wrapper">
 
-<h2>GIA HAN SOLUTIONS</h2>
-<p>Công cụ tính toán sản lượng & tài chính điện mặt trời (EPC)</p>
-
-<div class="section">
-<h3>Thông số kỹ thuật</h3>
-<div class="grid">
-<div><label>Latitude</label><input id="lat" value="21.0285"></div>
-<div><label>Longitude</label><input id="lon" value="105.8542"></div>
-<div><label>Công suất (kWp)</label><input id="capacity" value="10"></div>
-<div><label>Góc nghiêng (°)</label><input id="angle" value="15"></div>
-<div><label>Hướng (°)</label><input id="aspect" value="0"></div>
-<div><label>Loss (%)</label><input id="loss" value="14"></div>
-</div>
-</div>
-
-<div class="section">
-<h3>Thông số tài chính</h3>
-<div class="grid">
-<div><label>Suất đầu tư (VNĐ/kWp)</label><input id="capexkwp" value="15000000"></div>
-<div><label>Giá điện (VNĐ/kWh)</label><input id="tariff" value="2500"></div>
-<div><label>Chiết khấu (%)</label><input id="discount" value="10"></div>
-<div><label>Suy giảm (%/năm)</label><input id="degradation" value="0.5"></div>
-</div>
+<div class="panel">
+<button onclick="getLocation()">📍 Lấy vị trí</button>
+<div id="map"></div>
+<p id="coords">Chưa chọn vị trí</p>
 </div>
 
-<button onclick="calculate()">Tính toán</button>
-<button onclick="exportPDF()">Xuất PDF Proposal</button>
+<div class="panel">
 
-<div id="error"></div>
-<div id="result"></div>
-<canvas id="monthlyChart" style="margin-top:30px;"></canvas>
+<label>Chế độ hệ thống</label>
+<select id="mode" onchange="applyMode()">
+<option value="res">EPC Dân dụng & SME</option>
+<option value="ci">EPC C&I / Nhà xưởng</option>
+</select>
+
+<label>Công suất DC (kWp)</label>
+<input type="number" id="capacity" value="5">
+
+<label>Góc nghiêng (°)</label>
+<input type="number" id="angle" value="15">
+
+<label>Hướng (°) – 0 = Nam</label>
+<input type="number" id="aspect" value="0">
+
+<label>Tổng tổn hao (%)</label>
+<input type="number" id="loss" value="14">
+
+<button onclick="calculate()">PHÂN TÍCH EPC</button>
+
+<div class="result" id="result" style="display:none;"></div>
 
 </div>
-
-<footer>
-Gia Han Solutions – EPC điện mặt trời<br>
-Hotline: 0981 825 636<br>
-https://giahansolutions.io.vn
-</footer>
+</div>
 
 <script>
 
-let energy=0, monthly=[], irradiation=0, NPV=0, IRR=0;
+let lat=null;
+let lon=null;
 
-function formatNumber(num){
-return Number(num).toLocaleString('vi-VN');
+const map=new ol.Map({
+target:'map',
+layers:[new ol.layer.Tile({source:new ol.source.OSM()})],
+view:new ol.View({
+center:ol.proj.fromLonLat([106,16]),
+zoom:6
+})
+});
+
+map.on('click',function(evt){
+const coord=ol.proj.toLonLat(evt.coordinate);
+lon=coord[0];
+lat=coord[1];
+document.getElementById("coords").innerText=
+`Vị trí: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+});
+
+function getLocation(){
+navigator.geolocation.getCurrentPosition(pos=>{
+lat=pos.coords.latitude;
+lon=pos.coords.longitude;
+map.getView().animate({
+center:ol.proj.fromLonLat([lon,lat]),
+zoom:15
+});
+});
+}
+
+function applyMode(){
+const mode=document.getElementById("mode").value;
+if(mode==="res"){
+document.getElementById("loss").value=14;
+document.getElementById("angle").value=15;
+}else{
+document.getElementById("loss").value=10;
+document.getElementById("angle").value=10;
+}
 }
 
 async function calculate(){
 
-document.getElementById("error").innerHTML="";
-document.getElementById("result").innerHTML="Đang tính toán...";
-
-try{
-
-const lat = parseFloat(document.getElementById("lat").value);
-const lon = parseFloat(document.getElementById("lon").value);
-const capacity = parseFloat(document.getElementById("capacity").value);
-const angle = parseFloat(document.getElementById("angle").value);
-const aspect = parseFloat(document.getElementById("aspect").value);
-const loss = parseFloat(document.getElementById("loss").value);
-
-const url = `https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=${lat}&lon=${lon}&peakpower=${capacity}&loss=${loss}&angle=${angle}&aspect=${aspect}&outputformat=json`;
-
-const res = await fetch(url);
-
-if(!res.ok) throw new Error("Không kết nối được PVGIS");
-
-const data = await res.json();
-
-if(!data.outputs) throw new Error("PVGIS không trả dữ liệu");
-
-energy = data.outputs.totals.fixed.E_y;
-monthly = data.outputs.monthly.fixed;
-irradiation = data.outputs.totals.fixed["H(i)_y"];
-
-const specificYield = energy/capacity;
-const capacityFactor = energy/(capacity*8760);
-const PR = energy/(irradiation*capacity);
-const P90 = energy*0.95;
-
-const capex = capacity * parseFloat(document.getElementById("capexkwp").value);
-const tariff = parseFloat(document.getElementById("tariff").value);
-const discount = parseFloat(document.getElementById("discount").value)/100;
-const degradation = parseFloat(document.getElementById("degradation").value)/100;
-
-let cashflows=[-capex];
-let yearlyEnergy=energy;
-
-for(let i=1;i<=20;i++){
-cashflows.push(yearlyEnergy*tariff);
-yearlyEnergy*=(1-degradation);
-}
-
-function npv(rate,cf){
-return cf.reduce((a,c,i)=>a+c/Math.pow(1+rate,i),0);
-}
-
-function irr(cf){
-let guess=0.1;
-for(let i=0;i<200;i++){
-let f=npv(guess,cf);
-let df=(npv(guess+0.0001,cf)-f)/0.0001;
-guess-=f/df;
-}
-return guess;
-}
-
-NPV=npv(discount,cashflows);
-IRR=irr(cashflows);
-
-document.getElementById("result").innerHTML=`
-<div class="grid">
-<div class="card highlight"><div class="label">Annual Yield (P50)</div>${formatNumber(energy.toFixed(0))} kWh</div>
-<div class="card"><div class="label">P90</div>${formatNumber(P90.toFixed(0))} kWh</div>
-<div class="card"><div class="label">Specific Yield</div>${formatNumber(specificYield.toFixed(0))}</div>
-<div class="card"><div class="label">PR</div>${(PR*100).toFixed(1)}%</div>
-<div class="card"><div class="label">Capacity Factor</div>${(capacityFactor*100).toFixed(2)}%</div>
-<div class="card"><div class="label">NPV (20 năm)</div>${formatNumber(NPV.toFixed(0))} VNĐ</div>
-<div class="card"><div class="label">IRR</div>${(IRR*100).toFixed(2)}%</div>
-</div>
-`;
-
-if(window.chart) window.chart.destroy();
-
-window.chart=new Chart(document.getElementById("monthlyChart"),{
-type:'bar',
-data:{
-labels:monthly.map(m=>`T${m.month}`),
-datasets:[{data:monthly.map(m=>m.E_m)}]
-},
-options:{plugins:{legend:{display:false}}}
-});
-
-}catch(err){
-document.getElementById("error").innerHTML="Lỗi: "+err.message;
-document.getElementById("result").innerHTML="";
-}
-
-}
-
-function exportPDF(){
-
-if(!energy){
-alert("Vui lòng tính toán trước khi xuất PDF.");
+if(!lat){
+alert("Chọn vị trí trước");
 return;
 }
 
-const {jsPDF}=window.jspdf;
-const pdf=new jsPDF();
+const capacity=document.getElementById("capacity").value;
+const angle=document.getElementById("angle").value;
+const aspect=document.getElementById("aspect").value;
+const loss=document.getElementById("loss").value;
 
-pdf.setFontSize(18);
-pdf.text("GIA HAN SOLUTIONS",20,20);
+const res=await fetch(`/api/pvgis?lat=${lat}&lon=${lon}&peakpower=${capacity}&angle=${angle}&aspect=${aspect}&loss=${loss}`);
+const data=await res.json();
 
-pdf.setFontSize(12);
-pdf.text("BÁO CÁO PHÂN TÍCH ĐIỆN MẶT TRỜI",20,30);
+const energy=data.outputs.totals.fixed.E_y;
+const irradiation=data.outputs.totals.fixed["H(i)_y"];
+const monthly=data.outputs.monthly.fixed;
 
-pdf.text(`Annual Yield (P50): ${formatNumber(energy.toFixed(0))} kWh`,20,50);
-pdf.text(`NPV (20 năm): ${formatNumber(NPV.toFixed(0))} VNĐ`,20,60);
-pdf.text(`IRR: ${(IRR*100).toFixed(2)} %`,20,70);
+const specificYield=energy/capacity;
+const capacityFactor=energy/(capacity*8760);
+const PR=energy/(irradiation*capacity);
+const P90=energy*0.95;
 
-pdf.text("Cam kết kỹ thuật:",20,90);
-pdf.text("- Thiết kế theo IEC & TCVN hiện hành",25,100);
-pdf.text("- Sai số sản lượng ±5%",25,110);
-pdf.text("- Bảo hành module 25 năm hiệu suất",25,120);
+let monthTable="";
+monthly.forEach(m=>{
+monthTable+=`<tr><td>${m.month}</td><td>${m.E_m.toFixed(0)} kWh</td></tr>`;
+});
 
-pdf.save("Proposal-Gia-Han-Solutions.pdf");
+document.getElementById("result").style.display="block";
+document.getElementById("result").innerHTML=`
+<h3>Kết quả phân tích EPC</h3>
+<p><b>Annual Yield:</b> ${energy.toFixed(0)} kWh</p>
+<p><b>Specific Yield:</b> ${specificYield.toFixed(0)} kWh/kWp</p>
+<p><b>Capacity Factor:</b> ${(capacityFactor*100).toFixed(2)} %</p>
+<p><b>PR (xấp xỉ):</b> ${(PR*100).toFixed(1)} %</p>
+<p><b>P90:</b> ${P90.toFixed(0)} kWh</p>
+<hr>
+<h4>Sản lượng theo tháng</h4>
+<table style="width:100%;font-size:13px">${monthTable}</table>
+`;
 }
 
 </script>
+<footer>
+  <div class="brand">GIA HAN SOLUTIONS</div>
+  <div>Giải pháp điện mặt trời – EPC dân dụng & C&I</div>
+  <div>Hotline: 0981 825 636</div>
+  <div>Email: admin@giahansolutions.io.vn</div>
+  <div>Website: https://giahansolutions.io.vn</div>
+</footer>
 
+<!-- Messenger -->
+<a href="https://m.me/669698252892555" target="_blank">
+  <div class="float messenger">
+    <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png">
+  </div>
+</a>
+
+<!-- Zalo -->
+<a href="https://zalo.me/0981825636" target="_blank">
+  <div class="float zalo">
+    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968841.png">
+  </div>
+</a>
 </body>
 </html>
