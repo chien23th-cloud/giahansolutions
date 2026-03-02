@@ -8,75 +8,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body{
-font-family:Arial, sans-serif;
-background:#0f172a;
-color:#fff;
-margin:0;
-padding:30px;
-}
-
-.container{
-max-width:1100px;
-margin:auto;
-}
-
-h2{color:#00ffd5;margin-bottom:5px}
-
-.section{
-background:rgba(255,255,255,0.05);
-padding:20px;
-border-radius:12px;
-margin-bottom:20px;
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-gap:15px;
-}
-
-input,button{
-padding:8px;
-border-radius:6px;
-border:none;
-width:100%;
-margin-top:5px;
-}
-
-button{
-background:#00ffd5;
-font-weight:600;
-cursor:pointer;
-}
-
-.result{
-margin-top:20px;
-}
-
-.card{
-background:rgba(255,255,255,0.06);
-padding:15px;
-border-radius:10px;
-font-size:14px;
-}
-
-.card .label{
-font-size:12px;
-color:#aaa;
-}
-
-.highlight{
-background:rgba(0,255,213,0.2);
-font-weight:600;
-}
-
-footer{
-margin-top:40px;
-text-align:center;
-font-size:13px;
-color:#aaa;
-}
+body{font-family:Arial;background:#0f172a;color:#fff;margin:0;padding:30px;}
+.container{max-width:1100px;margin:auto;}
+h2{color:#00ffd5}
+.section{background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;margin-bottom:20px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;}
+input,button{padding:8px;border-radius:6px;border:none;width:100%;margin-top:5px;}
+button{background:#00ffd5;font-weight:600;cursor:pointer;}
+.card{background:rgba(255,255,255,0.06);padding:15px;border-radius:10px;font-size:14px;}
+.card .label{font-size:12px;color:#aaa;}
+.highlight{background:rgba(0,255,213,0.2);font-weight:600;}
+footer{margin-top:40px;text-align:center;font-size:13px;color:#aaa;}
+#error{color:#ff6b6b;margin-top:10px;}
 </style>
 </head>
 
@@ -112,7 +55,8 @@ color:#aaa;
 <button onclick="calculate()">Tính toán</button>
 <button onclick="exportPDF()">Xuất PDF Proposal</button>
 
-<div id="result" class="result"></div>
+<div id="error"></div>
+<div id="result"></div>
 <canvas id="monthlyChart" style="margin-top:30px;"></canvas>
 
 </div>
@@ -125,35 +69,49 @@ https://giahansolutions.io.vn
 
 <script>
 
+let energy=0, monthly=[], irradiation=0, NPV=0, IRR=0;
+
 function formatNumber(num){
 return Number(num).toLocaleString('vi-VN');
 }
 
 async function calculate(){
 
-const lat = document.getElementById("lat").value;
-const lon = document.getElementById("lon").value;
-const capacity = document.getElementById("capacity").value;
-const angle = document.getElementById("angle").value;
-const aspect = document.getElementById("aspect").value;
-const loss = document.getElementById("loss").value;
+document.getElementById("error").innerHTML="";
+document.getElementById("result").innerHTML="Đang tính toán...";
 
-const res = await fetch(`https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=${lat}&lon=${lon}&peakpower=${capacity}&loss=${loss}&angle=${angle}&aspect=${aspect}&outputformat=json`);
+try{
+
+const lat = parseFloat(document.getElementById("lat").value);
+const lon = parseFloat(document.getElementById("lon").value);
+const capacity = parseFloat(document.getElementById("capacity").value);
+const angle = parseFloat(document.getElementById("angle").value);
+const aspect = parseFloat(document.getElementById("aspect").value);
+const loss = parseFloat(document.getElementById("loss").value);
+
+const url = `https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=${lat}&lon=${lon}&peakpower=${capacity}&loss=${loss}&angle=${angle}&aspect=${aspect}&outputformat=json`;
+
+const res = await fetch(url);
+
+if(!res.ok) throw new Error("Không kết nối được PVGIS");
+
 const data = await res.json();
 
-window.energy = data.outputs.totals.fixed.E_y;
-window.monthly = data.outputs.monthly.fixed;
-window.irradiation = data.outputs.totals.fixed["H(i)_y"];
+if(!data.outputs) throw new Error("PVGIS không trả dữ liệu");
+
+energy = data.outputs.totals.fixed.E_y;
+monthly = data.outputs.monthly.fixed;
+irradiation = data.outputs.totals.fixed["H(i)_y"];
 
 const specificYield = energy/capacity;
 const capacityFactor = energy/(capacity*8760);
 const PR = energy/(irradiation*capacity);
 const P90 = energy*0.95;
 
-const capex = capacity * document.getElementById("capexkwp").value;
-const tariff = document.getElementById("tariff").value;
-const discount = document.getElementById("discount").value/100;
-const degradation = document.getElementById("degradation").value/100;
+const capex = capacity * parseFloat(document.getElementById("capexkwp").value);
+const tariff = parseFloat(document.getElementById("tariff").value);
+const discount = parseFloat(document.getElementById("discount").value)/100;
+const degradation = parseFloat(document.getElementById("degradation").value)/100;
 
 let cashflows=[-capex];
 let yearlyEnergy=energy;
@@ -169,7 +127,7 @@ return cf.reduce((a,c,i)=>a+c/Math.pow(1+rate,i),0);
 
 function irr(cf){
 let guess=0.1;
-for(let i=0;i<1000;i++){
+for(let i=0;i<200;i++){
 let f=npv(guess,cf);
 let df=(npv(guess+0.0001,cf)-f)/0.0001;
 guess-=f/df;
@@ -177,8 +135,8 @@ guess-=f/df;
 return guess;
 }
 
-window.NPV=npv(discount,cashflows);
-window.IRR=irr(cashflows);
+NPV=npv(discount,cashflows);
+IRR=irr(cashflows);
 
 document.getElementById("result").innerHTML=`
 <div class="grid">
@@ -192,7 +150,8 @@ document.getElementById("result").innerHTML=`
 </div>
 `;
 
-if(window.chart) chart.destroy();
+if(window.chart) window.chart.destroy();
+
 window.chart=new Chart(document.getElementById("monthlyChart"),{
 type:'bar',
 data:{
@@ -202,9 +161,19 @@ datasets:[{data:monthly.map(m=>m.E_m)}]
 options:{plugins:{legend:{display:false}}}
 });
 
+}catch(err){
+document.getElementById("error").innerHTML="Lỗi: "+err.message;
+document.getElementById("result").innerHTML="";
+}
+
 }
 
 function exportPDF(){
+
+if(!energy){
+alert("Vui lòng tính toán trước khi xuất PDF.");
+return;
+}
 
 const {jsPDF}=window.jspdf;
 const pdf=new jsPDF();
@@ -212,24 +181,17 @@ const pdf=new jsPDF();
 pdf.setFontSize(18);
 pdf.text("GIA HAN SOLUTIONS",20,20);
 
-pdf.setFontSize(13);
+pdf.setFontSize(12);
 pdf.text("BÁO CÁO PHÂN TÍCH ĐIỆN MẶT TRỜI",20,30);
 
-pdf.setFontSize(11);
+pdf.text(`Annual Yield (P50): ${formatNumber(energy.toFixed(0))} kWh`,20,50);
+pdf.text(`NPV (20 năm): ${formatNumber(NPV.toFixed(0))} VNĐ`,20,60);
+pdf.text(`IRR: ${(IRR*100).toFixed(2)} %`,20,70);
 
-pdf.text("I. Kết quả kỹ thuật",20,50);
-pdf.text(`Annual Yield (P50): ${formatNumber(energy.toFixed(0))} kWh`,25,60);
-pdf.text(`P90: ${formatNumber((energy*0.95).toFixed(0))} kWh`,25,70);
-
-pdf.text("II. Phân tích tài chính (20 năm)",20,90);
-pdf.text(`NPV: ${formatNumber(NPV.toFixed(0))} VNĐ`,25,100);
-pdf.text(`IRR: ${(IRR*100).toFixed(2)} %`,25,110);
-
-pdf.text("III. Cam kết kỹ thuật",20,130);
-pdf.text("- Thiết kế theo IEC & TCVN hiện hành",25,140);
-pdf.text("- Sai số sản lượng tính toán ±5%",25,150);
-pdf.text("- Module bảo hành 25 năm hiệu suất",25,160);
-pdf.text("- Kiểm tra & bảo trì định kỳ 6 tháng/lần",25,170);
+pdf.text("Cam kết kỹ thuật:",20,90);
+pdf.text("- Thiết kế theo IEC & TCVN hiện hành",25,100);
+pdf.text("- Sai số sản lượng ±5%",25,110);
+pdf.text("- Bảo hành module 25 năm hiệu suất",25,120);
 
 pdf.save("Proposal-Gia-Han-Solutions.pdf");
 }
