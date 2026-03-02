@@ -14,7 +14,8 @@ export async function onRequest(context) {
     });
   }
 
-  const apiUrl = `https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=${lat}&lon=${lon}&peakpower=${peakpower}&loss=14&outputformat=json`;
+  const apiUrl =
+    `https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=${lat}&lon=${lon}&peakpower=${peakpower}&loss=14&outputformat=json`;
 
   try {
     const response = await fetch(apiUrl);
